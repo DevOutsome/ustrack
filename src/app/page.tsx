@@ -10,13 +10,9 @@ export default async function Home() {
     redirect('/login')
   }
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
+  // Query user role via RPC (bypasses RLS)
+  const { data: role } = await supabase
+    .rpc('get_user_role', { user_id: user.id })
 
-  const role = profile?.role || 'participant'
-
-  return <Portal role={role} email={user.email || ''} />
+  return <Portal role={role || 'participant'} email={user.email || ''} />
 }
