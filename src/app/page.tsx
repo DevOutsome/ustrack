@@ -1,5 +1,6 @@
 import { createServerSupabase } from '@/lib/supabase-server'
 import { redirect } from 'next/navigation'
+import Portal from './portal'
 
 export default async function Home() {
   const supabase = await createServerSupabase()
@@ -9,7 +10,6 @@ export default async function Home() {
     redirect('/login')
   }
 
-  // Query user role from profiles table
   const { data: profile } = await supabase
     .from('profiles')
     .select('role')
@@ -18,11 +18,5 @@ export default async function Home() {
 
   const role = profile?.role || 'participant'
 
-  return (
-    <iframe
-      src={`/app.html?role=${role}&email=${encodeURIComponent(user.email || '')}`}
-      className="w-full h-screen border-0"
-      title="US Healthcare Track"
-    />
-  )
+  return <Portal role={role} email={user.email || ''} />
 }
