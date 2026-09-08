@@ -9,9 +9,18 @@ export default async function Home() {
     redirect('/login')
   }
 
+  // Query user role from profiles table
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  const role = profile?.role || 'participant'
+
   return (
     <iframe
-      src="/app.html"
+      src={`/app.html?role=${role}&email=${encodeURIComponent(user.email || '')}`}
       className="w-full h-screen border-0"
       title="US Healthcare Track"
     />
