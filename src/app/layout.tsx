@@ -4,6 +4,9 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "US Healthcare Track | Outsome",
   description: "Outsome US Healthcare Track participant portal",
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({
