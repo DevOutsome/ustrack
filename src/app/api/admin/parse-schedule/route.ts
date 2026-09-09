@@ -22,14 +22,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    // Role check via users table
-    const { data: profile } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    if (profile?.role !== 'organizer') {
+    // Role check via SECURITY DEFINER RPC (same pattern as /api/admin/members)
+    const { data: role } = await supabase.rpc('get_user_role', { user_id: user.id });
+    if (role !== 'organizer') {
       return NextResponse.json({ error: 'Organizer access required' }, { status: 403 });
     }
 
