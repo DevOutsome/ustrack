@@ -30,13 +30,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No schedule data provided' }, { status: 400 });
     }
 
-    const { error } = await supabase.from('schedule_data').upsert({
-      id: 'current',
-      schedule: body.schedule,
-      source_url: body.sourceUrl ?? null,
-      source_type: body.sourceType ?? 'manual',
-      synced_at: new Date().toISOString(),
-      synced_by: user.email ?? user.id,
+    // Use SECURITY DEFINER RPC to bypass RLS
+    const { data, error } = await supabase.rpc('upsert_schedule', {
+      p_schedule: body.schedule,
+      p_source_url: body.sourceUrl ?? null,
+      p_source_type: body.sourceType ?? 'manual',
+      p_synced_by: user.email ?? user.id,
     });
 
     if (error) {
