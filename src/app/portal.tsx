@@ -6,17 +6,14 @@ export default function Portal({ role, email }: { role: string; email: string })
     const win = iframeRef.current?.contentWindow as any
     const doc = iframeRef.current?.contentDocument
     if (!win || !doc) return
-    // Mobile nav fix
     const mob = doc.createElement('style'); mob.textContent = '@media(max-width:600px){.nav{padding:0 12px;gap:8px}.nav-bridge,.nav-brand{display:none}.nav-tabs{gap:0;padding:2px}.nav-tab{padding:6px 9px;font-size:12px}.nav-tab.admin-tab::before{margin-right:4px}.nav-bell{width:32px;height:32px}}'; doc.head.appendChild(mob)
-    // Admin attendee chip fix + housekeeping event style
-    const fix = doc.createElement('style'); fix.textContent = '.att-chip{min-width:90px;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;justify-content:flex-start;font-size:11.5px!important;padding:4px 8px!important}.att-chip .dot-g,.att-chip .dot-r{flex-shrink:0}.ev-card.housekeeping{opacity:.55;border-style:dashed!important}.ev-card.housekeeping .ev-rsvp,.ev-card.housekeeping .ev-add{display:none!important}'; doc.head.appendChild(fix)
-    if (!win || !doc) return
+    const fix = doc.createElement('style'); fix.textContent = '.att-chip{min-width:90px;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;justify-content:flex-start;font-size:11.5px!important;padding:4px 8px!important}.att-chip .dot-g,.att-chip .dot-r{flex-shrink:0}.event-card.housekeeping{opacity:.5;border-style:dashed!important}.event-card.housekeeping button{display:none!important}'; doc.head.appendChild(fix)
     if (typeof win.setRole === 'function') {
       win.setRole(role)
       if (role !== 'organizer') { const seg = doc.getElementById('roleSeg'); if (seg) seg.style.display = 'none' }
     }
-    // Mark housekeeping events
-    var cards = doc.querySelectorAll('.ev-card'); cards.forEach(function(c: any) { var t = c.textContent || ''; if (/Wrap up|Unpack|분리수거|Set up|Prep for/i.test(t) && !/Workshop|Lecture|Fireside/i.test(t)) { c.classList.add('housekeeping') } })
+    doc.querySelectorAll('.event-card.cat-house_activity').forEach(function(c: any) { c.classList.add('housekeeping') })
+    doc.querySelectorAll('.event-card').forEach(function(c: any) { var t = c.querySelector('.ec-title')?.textContent?.trim() || ''; if (/^(Unpack|Set up|Prep for)/.test(t)) c.classList.add('housekeeping') })
     if (role === 'organizer') {
       var ac = doc.getElementById('adminContent'); if (!ac) return
       var s = doc.createElement('style'); s.textContent = '.at{position:relative;width:40px;height:22px;border-radius:11px;background:#D8CFC0;cursor:pointer;transition:background .2s;flex-shrink:0}.at.on{background:#2F2C26}.at::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.15);transition:transform .2s}.at.on::after{transform:translateX(18px)}.mc{display:flex;align-items:center;gap:12px;padding:12px 16px;background:#fff;border:1px solid #E8E1D6;border-radius:12px;transition:border-color .3s}'; doc.head.appendChild(s)
