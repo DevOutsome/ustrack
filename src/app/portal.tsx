@@ -6,6 +6,7 @@ export default function Portal({ role, email }: { role: string; email: string })
     const win = iframeRef.current?.contentWindow as any
     const doc = iframeRef.current?.contentDocument
     if (!win || !doc) return
+    const mob = doc.createElement('style'); mob.textContent = '@media (max-width:600px){.nav{padding:0 12px;gap:8px}.nav-bridge,.nav-brand{display:none}.nav-tabs{gap:0;padding:2px}.nav-tab{padding:6px 9px;font-size:12px}.nav-tab.admin-tab::before{margin-right:4px}.nav-bell{width:32px;height:32px}}'; doc.head.appendChild(mob)
     if (typeof win.setRole === 'function') {
       win.setRole(role)
       if (role !== 'organizer') { const seg = doc.getElementById('roleSeg'); if (seg) seg.style.display = 'none' }
