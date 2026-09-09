@@ -128,7 +128,10 @@ function detectLayout(rows: string[][]): Layout {
   // Template format has recognisable header keywords in first ~10 rows
   for (let i = 0; i < Math.min(rows.length, 10); i++) {
     const joined = rows[i].map(c => c.toLowerCase().trim()).join('|');
-    if (joined.includes('day title') && joined.includes('category')) return 'template';
+    // Match both "Day Title" and standalone column headers like "date|...|category|title"
+    if ((joined.includes('day title') || joined.includes('is meal')) && joined.includes('category')) return 'template';
+    // Also detect if first column header is "Date" and "Category" appears in any column
+    if (rows[i][0]?.trim().toLowerCase() === 'date' && joined.includes('category')) return 'template';
   }
   return 'existing';
 }
@@ -271,7 +274,9 @@ function parseTemplate(rows: string[][]): ScheduleDay[] {
         loc: cleanLocation(rawLoc),
       };
 
-      if (cat === 'meal' || rawMeal === 'TRUE' || rawMeal === '1') ev.meal = 1;
+      if (cat === 'meal' || rawMeal === 'TRUE' || rawMeal === '1' || rawMeal === 'true') ev.meal = 1;
+      // Also detect meals from title
+      if (/\b(breakfast|lunch|dinner)\b/i.test(rawTitle) && !ev.meal) ev.meal = 1;
       if (rawCtx) ev.ctx = rawCtx.slice(0, 500);
       if (rawDesc) ev.desc = rawDesc.slice(0, 500);
 
