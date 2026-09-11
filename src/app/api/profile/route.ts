@@ -28,7 +28,7 @@ export async function GET() {
 
   const { data, error } = await supabase
     .from('users')
-    .select('id, email, display_name, company, title, location, bio, diet, social_links, role')
+    .select('id, email, display_name, company, title, location, bio, diet, social_links, role, avatar_url')
     .eq('id', user.id)
     .maybeSingle()
 
@@ -80,7 +80,7 @@ export async function PUT(request: NextRequest) {
     .from('users')
     .update(patch)
     .eq('id', user.id)
-    .select('id, email, display_name, company, title, location, bio, diet, social_links, role')
+    .select('id, email, display_name, company, title, location, bio, diet, social_links, role, avatar_url')
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })

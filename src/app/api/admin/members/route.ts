@@ -42,6 +42,7 @@ export async function GET() {
 /**
  * PUT: { email, newRole }   -> change role
  *      { email, approved }  -> admit or revoke access
+ *      { email, reject: true } -> delete a pending (unapproved) account entirely
  */
 export async function PUT(request: NextRequest) {
   const access = await getAccess()
@@ -52,6 +53,12 @@ export async function PUT(request: NextRequest) {
   const body = await request.json().catch(() => ({}))
   const email = typeof body.email === 'string' ? body.email : ''
   if (!email) return NextResponse.json({ error: 'email required' }, { status: 400 })
+
+  if (body.reject === true) {
+    const { error } = await supabase.rpc('reject_pending_user', { target_email: email })
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ success: true })
+  }
 
   if (typeof body.approved === 'boolean') {
     // Do not let an organiser lock themselves out mid-program.

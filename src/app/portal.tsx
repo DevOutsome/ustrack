@@ -63,6 +63,8 @@ export default function Portal({ role, email }: { role: string; email: string })
 .approve-btn{height:30px;padding:0 13px;border-radius:8px;border:1.5px solid #2F2C26;background:#2F2C26;color:#fff;font-size:12px;font-weight:600;cursor:pointer}
 .approve-btn:disabled{opacity:.5;cursor:default}
 .revoke-btn{height:28px;padding:0 10px;border-radius:8px;border:1px solid #E8E1D6;background:#fff;color:#857F76;font-size:11.5px;font-weight:600;cursor:pointer}
+.reject-btn{height:30px;padding:0 12px;border-radius:8px;border:1px solid #E8E1D6;background:#fff;color:#857F76;font-size:12px;font-weight:600;cursor:pointer}
+.reject-btn:hover{border-color:#C62828;color:#C62828}
 .mm-h{display:flex;align-items:center;gap:10px;margin:22px 0 10px}
 .mm-h h3{font-size:13px;font-weight:800;letter-spacing:-.2px}
 .mm-count{background:#2F2C26;color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px}
@@ -105,7 +107,7 @@ export default function Portal({ role, email }: { role: string; email: string })
     ${m.approved
       ? `<span class="mc-lbl">Admin</span><div class="at${m.role === 'organizer' ? ' on' : ''}" data-e="${m.email}"></div>
          <button class="revoke-btn" data-revoke="${m.email}">Remove</button>`
-      : `<button class="approve-btn" data-approve="${m.email}">Approve</button>`}
+      : `<button class="reject-btn" data-reject="${m.email}">Reject</button><button class="approve-btn" data-approve="${m.email}">Approve</button>`}
   </div>
 </div>`
 
@@ -136,6 +138,12 @@ ${active.map(card).join('')}`
 
       list.querySelectorAll<HTMLElement>('[data-approve]').forEach(b =>
         b.addEventListener('click', () => send({ email: b.dataset.approve, approved: true }, b)))
+
+      list.querySelectorAll<HTMLElement>('[data-reject]').forEach(b =>
+        b.addEventListener('click', () => {
+          if (!confirm(`Reject and delete ${b.dataset.reject}? They will need to sign up again.`)) return
+          send({ email: b.dataset.reject, reject: true }, b)
+        }))
 
       list.querySelectorAll<HTMLElement>('[data-revoke]').forEach(b =>
         b.addEventListener('click', () => {
