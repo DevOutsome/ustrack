@@ -19,7 +19,7 @@ export default function LoginPage() {
         </svg>
         <p style={{ textAlign:'center',fontSize:11,fontWeight:600,letterSpacing:1.5,textTransform:'uppercase',color:'#7a7570',marginBottom:6 }}>Participant Portal</p>
         <h1 style={{ textAlign:'center',fontSize:26,fontWeight:800,color:'#2F2C26',letterSpacing:'-0.5px',marginBottom:4,margin:0 }}>US Healthcare Track</h1>
-        <p style={{ textAlign:'center',fontSize:12.5,color:'#7a7570',fontWeight:500,marginBottom:28 }}>{step==='email'?'Oct 19–31, 2026 · Burlingame, CA':'Enter the 6-digit code sent to '+email}</p>
+        <p style={{ textAlign:'center',fontSize:12.5,color:'#7a7570',fontWeight:500,marginBottom:28 }}>{step==='email'?'Oct 19–Nov 1, 2026 · San Francisco, CA':'Enter the 6-digit code sent to '+email}</p>
         {step==='email'?(
           <form onSubmit={handleSendCode}>
             <label style={{ display:'block',fontSize:11,fontWeight:600,letterSpacing:1,textTransform:'uppercase',color:'#7a7570',marginBottom:8 }}>Email</label>

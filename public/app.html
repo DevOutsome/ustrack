@@ -407,7 +407,93 @@ h1.page-title{font-size:28px;font-weight:800;letter-spacing:-.7px;margin-bottom:
 .att-chip::after{content:"";position:absolute;right:0;top:0;bottom:0;width:24px;background:linear-gradient(to right,transparent,#F7F5F0);pointer-events:none}
 .att-chip .dot-g,.att-chip .dot-r{flex-shrink:0}
 /* Mobile nav: hide brand block so all tabs fit */
-@media(max-width:600px){.nav{padding:0 12px;gap:8px}.nav-bridge,.nav-brand{display:none}.nav-tabs{gap:0;padding:2px}.nav-tab{padding:6px 9px;font-size:12px}.nav-tab.admin-tab::before{margin-right:4px}.nav-bell{width:32px;height:32px}}
+/* ================================================================
+   MOBILE (<= 600px) - native-app feel
+   - Bottom tab bar with icons (thumb reach), top bar keeps brand + bell
+   - Compact cards: no weather copy, stacked full-width actions
+   - Larger touch targets (44px min), safe-area insets for iPhone
+   ================================================================ */
+@media(max-width:600px){
+html{-webkit-text-size-adjust:100%}
+body{padding-bottom:calc(64px + env(safe-area-inset-bottom))}
+/* Top bar: brand only, tabs move to bottom */
+.nav{padding:0 14px;padding-top:env(safe-area-inset-top);gap:10px;height:calc(var(--nav-h) + env(safe-area-inset-top))}
+.nav-brand{display:block}
+.nav-brand b{font-size:14.5px}
+.nav-brand small{font-size:10.5px}
+.nav-bridge{display:none}
+.nav-tabs{display:none}
+.nav-logout{width:34px;height:34px;margin-left:auto}
+.nav-bell{width:34px;height:34px}
+/* Bottom tab bar */
+.tabbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:200;height:calc(58px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:rgba(248,245,239,.92);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-top:1px solid var(--border)}
+.tabbar button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:6px 0 4px;color:var(--muted);font-size:10px;font-weight:600;letter-spacing:.1px;background:none;border:0;-webkit-tap-highlight-color:transparent;transition:color .15s}
+.tabbar button svg{width:22px;height:22px;stroke-width:1.9}
+.tabbar button.active{color:var(--text)}
+.tabbar button.active svg{stroke-width:2.4}
+.tabbar button:active{transform:scale(.94)}
+/* Page container */
+.page{padding:14px 14px 32px}
+h1.page-title{font-size:24px;letter-spacing:-.6px}
+.page-sub{font-size:13.5px;margin-bottom:16px}
+/* Date strip: bigger touch targets, no arrows (swipe is native) */
+.date-arrow{display:none}
+.day-tabs{gap:6px;padding:2px 0}
+.day-tab{min-width:46px;padding:9px 0}
+.day-tab .dow{font-size:10px}
+.day-tab .dnum{font-size:16px}
+.day-title b{font-size:17px}
+.day-title small{font-size:12px}
+.day-title .qt{font-size:11px}
+/* Segmented view toggle */
+.seg{width:100%}
+.seg button{flex:1;padding:9px 0;font-size:12.5px}
+/* Event cards: compact */
+.event-card{padding:14px 15px;margin-bottom:9px;border-radius:14px}
+.event-card:active{transform:scale(.985)}
+.ec-top{gap:11px}
+.ec-time{min-width:46px}
+.t-range{font-size:12px}
+.sun-tip{display:none}
+.sun{margin-top:4px}
+.ec-badge{font-size:10px;padding:3px 8px}
+.ec-title{font-size:15px;-webkit-line-clamp:2}
+.ec-loc{font-size:12px}
+.ec-footer{margin-top:12px;padding-top:11px;gap:9px}
+.ec-avatar{width:22px;height:22px;font-size:8px;margin-right:-6px}
+.ec-going{font-size:11.5px}
+.ec-actions{width:100%;gap:8px}
+.ec-actions .meal-seg{flex:1;display:flex}
+.ec-actions .meal-seg button{flex:1;height:40px;font-size:13px}
+.ec-actions .add-btn{flex:1;height:40px;font-size:13px;justify-content:center}
+.event-card.housekeeping{padding:9px 14px}
+/* People grid: 2-up */
+.people-grid{grid-template-columns:1fr 1fr;gap:10px}
+.person{padding:14px 12px}
+.p-av{width:44px;height:44px;font-size:14px}
+.p-name{font-size:13.5px}
+.p-co{font-size:11.5px}
+/* Profile */
+.prof-av{width:80px;height:80px;font-size:26px}
+.prof-name{font-size:21px}
+.pf input{font-size:16px;padding:12px 13px}   /* 16px prevents iOS zoom on focus */
+.pf-actions .add-btn{width:100%;height:44px;font-size:14px}
+/* Info accordion */
+.faq-q{padding:14px 0;font-size:14.5px}
+/* Notification panel: full-width sheet */
+.notif-panel{top:auto;bottom:calc(64px + env(safe-area-inset-bottom));right:10px;left:10px;width:auto;max-height:60vh;border-radius:16px}
+/* Modal: bottom sheet */
+.modal{align-items:flex-end}
+.modal-content{border-radius:20px 20px 0 0;max-height:88vh;width:100%;padding-bottom:calc(20px + env(safe-area-inset-bottom))}
+/* Daily NPS */
+.checkin{padding:12px}
+.nps-row button{width:40px;height:40px}
+/* Admin */
+.ops-grid{grid-template-columns:1fr 1fr}
+.att-chip{min-width:0;max-width:none}
+}
+/* Hide the bottom bar on desktop */
+@media(min-width:601px){.tabbar{display:none}}
 </style>
 </head>
 <body>
@@ -426,6 +512,13 @@ h1.page-title{font-size:28px;font-weight:800;letter-spacing:-.7px;margin-bottom:
 <div class="notif-overlay" id="notifOverlay" onclick="toggleNotif()"><div class="notif-panel" id="notifPanel" onclick="event.stopPropagation()"></div></div>
 <button class="nav-bell" data-page="announcements"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="dot"></span></button>
 </nav>
+<div class="tabbar" id="tabbar">
+<button data-page="schedule" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Schedule</button>
+<button data-page="people"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>People</button>
+<button data-page="info"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>Info</button>
+<button data-page="profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profile</button>
+<button data-page="admin" id="tabbarAdmin" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Admin</button>
+</div>
 
 
 <div class="page active" id="page-schedule">
@@ -530,7 +623,7 @@ var S=[{"day":1,"date":"10/19","dow":"Mon","theme":"UNWIND + OT","events":[{"t":
    list. An empty roster is honest; a fabricated one is not. */
 var P=[];
 var INFO=[{section:'General',items:[
-{q:'Welcome to US Healthcare Track',a:'Welcome! You\u2019re joining Outsome\u2019s 13-day intensive program designed to help Korean healthcare startups build real traction in the US market.\n\nDates: Oct 19\u201331, 2026\nLocation: MARU SF, San Francisco Bay Area\nTeam size: ~15 people\n\nThis portal is your single source of truth for schedules, RSVPs, and program info.'},
+{q:'Welcome to US Healthcare Track',a:'Welcome! You\u2019re joining Outsome\u2019s 14-day intensive program designed to help Korean healthcare startups build real traction in the US market.\n\nDates: Oct 19\u2013Nov 1, 2026\nLocation: MARU SF, San Francisco Bay Area\nTeam size: ~15 people\n\nThis portal is your single source of truth for schedules, RSVPs, and program info.'},
 {q:'Program structure',a:'Week 1 (Oct 19\u201323)\n\u2022 Day 1: Arrival + Orientation\n\u2022 Day 2: Workshop with Helen Chen (Alixia YC) + IndieBio\n\u2022 Day 3: Founder Networking + YC Dinner\n\u2022 Day 4: VC Day at WilmerHale HQ\n\u2022 Day 5: Site Visits - BioLabs, IMPRIMED, Khosla, IndieBio\n\nWeekend (Oct 24\u201325): Free\n\nWeek 2 (Oct 26\u201331)\n\u2022 Day 8: Pitch Bootcamp at 500 Global\n\u2022 Day 9: Data Workshop w/ Adam Koszek\n\u2022 Day 10: Microsoft + Stanford\n\u2022 Day 11: YC Lunch + Lunit Chairman Fireside\n\u2022 Day 12: Workshop 2 + TaeWoong Fireside\n\u2022 Day 13: Off'},
 {q:'What to bring',a:'\u2022 Laptop + charger (US Type A/B, 120V)\n\u2022 Business cards\n\u2022 Startup one-pager (print 20+ copies for VC Day)\n\u2022 Layers - SF temps swing 50\u201370\u00b0F daily\n\u2022 Comfortable walking shoes\n\u2022 Workout clothes (24 Hour Fitness sessions)\n\u2022 Portable charger\n\u2022 Indoor slippers (required at MARU SF, NOT provided)\n\u2022 Toiletries: shampoo, conditioner, body wash, toothbrush/paste, skincare, razor - NOT provided'}]},
 {section:'Getting Here',items:[
@@ -692,7 +785,7 @@ function isHK(ev){return !!HK_CATS[ev.cat]}
 function attMark(ev){return ev.att==='Strongly Recommended'?'<span class="req">Required</span>':''}
 
 /* RENDER SCHEDULE (full render only on day change / view change) */
-function rDT(){var el=document.getElementById('dayTabs'),h='';S.forEach(function(d){h+='<button class="day-tab '+(selDay===d.day?'active':'')+(d.off?' off':'')+'" data-day="'+d.day+'"><span class="dow">'+d.dow+'</span><span class="dnum">'+d.date.split('/')[1]+'</span></button>'});el.innerHTML=h;document.getElementById('allBtn').classList.toggle('active',selDay===0);document.getElementById('prevDay').disabled=selDay<=1;document.getElementById('nextDay').disabled=selDay===0||selDay>=S.length;var t=document.getElementById('dayTitle');if(selDay===0){t.innerHTML='<b>All days</b><small>Oct 19–31 · 13 days</small>'}else{var d=S.find(function(x){return x.day===selDay});t.innerHTML='<b>Day '+d.day+' · '+d.theme+'</b><small>'+d.dow+', Oct '+d.date.split('/')[1]+'</small>'+(QUOTES[d.day]?'<span class="qt">\u201c'+QUOTES[d.day].q+'\u201d \u2014 '+QUOTES[d.day].a+'</span>':'')}var act=el.querySelector('.day-tab.active');if(act)act.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'})}
+function rDT(){var el=document.getElementById('dayTabs'),h='';S.forEach(function(d){h+='<button class="day-tab '+(selDay===d.day?'active':'')+(d.off?' off':'')+'" data-day="'+d.day+'"><span class="dow">'+d.dow+'</span><span class="dnum">'+d.date.split('/')[1]+'</span></button>'});el.innerHTML=h;document.getElementById('allBtn').classList.toggle('active',selDay===0);document.getElementById('prevDay').disabled=selDay<=1;document.getElementById('nextDay').disabled=selDay===0||selDay>=S.length;var t=document.getElementById('dayTitle');if(selDay===0){t.innerHTML='<b>All days</b><small>Oct 19–Nov 1 · 14 days</small>'}else{var d=S.find(function(x){return x.day===selDay});t.innerHTML='<b>Day '+d.day+' · '+d.theme+'</b><small>'+d.dow+', Oct '+d.date.split('/')[1]+'</small>'+(QUOTES[d.day]?'<span class="qt">\u201c'+QUOTES[d.day].q+'\u201d \u2014 '+QUOTES[d.day].a+'</span>':'')}var act=el.querySelector('.day-tab.active');if(act)act.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'})}
 function mealSeg(id){var v=meals[id];return'<div class="meal-seg" onclick="event.stopPropagation()"><button class="yes '+(v==='yes'?'on':'')+'" onclick="event.stopPropagation();tM(\''+id+'\',\'yes\',this)">'+IC.check+'I\'m in</button><button class="no '+(v==='no'?'on':'')+'" onclick="event.stopPropagation();tM(\''+id+'\',\'no\',this)">Skip</button></div>'}
 function addBtn(id){var a=rsvps[id];return'<button class="add-btn '+(a?'added':'')+'" onclick="event.stopPropagation();tR(\''+id+'\',this)">'+(a?IC.check+'Added':IC.plus+'Add to schedule')+'</button>'}
 function rS(){var el=document.getElementById('scheduleList'),h='',days=selDay===0?S:S.filter(function(d){return d.day===selDay}),n=0;days.forEach(function(d){var rows='';d.events.forEach(function(ev,i){var id=eid(d.day,i);if(mySched&&!rsvps[id])return;n++;var badge='<span class="ec-badge badge-'+ev.cat+'">'+(CATICON[ev.cat]||'')+catL(ev.cat)+'</span>'+(isYC(ev)?'<span class="yc-tag">'+YCLOGO+'YC</span>':'')+attMark(ev);if(viewMode==='agenda'){var a=rsvps[id];rows+='<div class="agenda-row cat-'+ev.cat+(isHK(ev)?' housekeeping':'')+'" onclick="oM('+d.day+','+i+')"><span class="t">'+ev.t.split('–')[0]+'</span><span class="ec-badge badge-'+ev.cat+'" style="margin:0">'+(CATICON[ev.cat]||'')+catL(ev.cat)+'</span><span class="ti">'+ev.title+'</span>'+(isYC(ev)?'<span class="yc-tag" style="margin:0">'+YCLOGO+'</span>':'')+(a?'<span class="ch">'+IC.check+'</span>':'')+'</div>'}else{var fa=fA(d.day,i);var av=fa.shown.map(function(p){return'<div class="ec-avatar">'+ini(p.name)+'</div>'}).join('');var hk=isHK(ev);rows+='<div class="event-card cat-'+ev.cat+(hk?' housekeeping':'')+'" data-k="'+id+'" onclick="oM('+d.day+','+i+')">'+(rsvps[id]?'<div class="added-dot">'+IC.check+'</div>':'')+'<div class="ec-top"><div class="ec-time"><span class="t-range">'+ev.t+'</span>'+sunHtml(ev.t)+'</div><div class="ec-body">'+badge+'<div class="ec-title">'+ev.title+'</div>'+(ev.loc?'<div class="ec-loc">'+IC.pin+ev.loc+'</div>':'')+'</div></div><div class="ec-footer"><div style="display:flex;align-items:center"><div class="ec-avatars">'+av+'</div><span class="ec-going">'+fa.total+' going</span></div><div class="ec-actions">'+(hk?'':((ev.meal?mealSeg(id):'')+addBtn(id)))+'</div></div></div>'}});if(!rows)return;if(selDay===0)h+='<div class="day-header"><b>Day '+d.day+' · '+d.theme+'</b><span>'+d.dow+', Oct '+d.date.split('/')[1]+'</span></div>';h+=rows});
@@ -862,7 +955,7 @@ h+='<svg viewBox="0 0 '+gW+' '+gH+'" style="width:100%;height:auto;overflow:visi
 h+='</div></div>';
 /* Latest highlight */
 var latest=allNPS[allNPS.length-1];if(latest&&latest.highlight){h+='<div style="font-size:13px;color:var(--text2);padding:10px 14px;background:var(--bg);border-radius:8px"><b style="color:var(--muted);font-size:10px;display:block;margin-bottom:4px;letter-spacing:.5px">LATEST HIGHLIGHT \u00b7 DAY '+latest.day+'</b>\u201c'+latest.highlight+'\u201d</div>'}
-h+='<div style="font-size:11px;color:var(--muted);margin-top:8px">'+allNPS.length+' of 13 days reported</div>';
+h+='<div style="font-size:11px;color:var(--muted);margin-top:8px">'+allNPS.length+' of 14 days reported</div>';
 h+='</div>'}
 if(!mealEv.length&&!moveEv.length)h+='<div class="empty">No meals or moves scheduled for this day.</div>';
 document.getElementById('adminContent').innerHTML=h}
@@ -873,10 +966,11 @@ h+='<div class="whos"><h3>Who\'s going · '+whoPpl.length+'</h3>';
 if(!whoPpl.length){h+='<div class="wg-empty">No one has added this yet.</div>'}
 whoPpl.forEach(function(p){h+='<div class="wg"><div class="wg-av">'+ini(p.name)+'</div><div><b>'+esc(p.name)+'</b><span>'+esc(p.company||'')+'</span></div></div>'});h+='</div>';document.getElementById('modalContent').innerHTML=h;if(!keep)document.getElementById('eventModal').classList.add('open')}
 function cM(){document.getElementById('eventModal').classList.remove('open');_mDay=null;_mIdx=null}
-function sP(p){document.querySelectorAll('.page').forEach(function(el){el.classList.remove('active')});var pg=document.getElementById('page-'+p);pg.classList.remove('active');void pg.offsetWidth;pg.classList.add('active');document.querySelectorAll('.nav-tab').forEach(function(t){t.classList.toggle('active',t.dataset.page===p)});if(p==='people')rP();if(p==='info')rI();if(p==='announcements')rA();if(p==='admin')rAdmin();window.scrollTo({top:0})}
+function sP(p){document.querySelectorAll('.page').forEach(function(el){el.classList.remove('active')});var pg=document.getElementById('page-'+p);pg.classList.remove('active');void pg.offsetWidth;pg.classList.add('active');document.querySelectorAll('.nav-tab').forEach(function(t){t.classList.toggle('active',t.dataset.page===p)});document.querySelectorAll('#tabbar button').forEach(function(t){t.classList.toggle('active',t.dataset.page===p)});if(p==='people')rP();if(p==='info')rI();if(p==='announcements')rA();if(p==='admin')rAdmin();window.scrollTo({top:0})}
 function goDay(n){selDay=n;rDT();rS()}
 
 document.querySelectorAll('.nav-tab').forEach(function(t){t.addEventListener('click',function(){sP(t.dataset.page)})});
+document.querySelectorAll('#tabbar button').forEach(function(t){t.addEventListener('click',function(){sP(t.dataset.page)})});
 document.querySelector('.nav-bell').addEventListener('click',function(e){e.stopPropagation();toggleNotif()});
 document.getElementById('dayTabs').addEventListener('click',function(e){var b=e.target.closest('.day-tab');if(b)goDay(+b.dataset.day)});
 document.getElementById('allBtn').addEventListener('click',function(){goDay(selDay===0?1:0)});
@@ -889,7 +983,7 @@ document.getElementById('infoSearch').addEventListener('input',rI);
 document.getElementById('admPrev').addEventListener('click',function(){if(admDay>1){admDay--;rAdmin()}});
 document.getElementById('admNext').addEventListener('click',function(){if(admDay<S.length){admDay++;rAdmin()}});
 document.addEventListener('keydown',function(e){if(e.key==='Escape')cM()});
-function setRole(r){curRole=r;document.getElementById('adminTab').style.display=r==='organizer'?'':'none';document.querySelectorAll('#roleSeg button').forEach(function(b){b.classList.toggle('active',b.dataset.role===r)});/* The profile header is owned by loadProfile() - it renders the signed-in
+function setRole(r){curRole=r;document.getElementById('adminTab').style.display=r==='organizer'?'':'none';var tba=document.getElementById('tabbarAdmin');if(tba)tba.style.display=r==='organizer'?'':'none';document.querySelectorAll('#roleSeg button').forEach(function(b){b.classList.toggle('active',b.dataset.role===r)});/* The profile header is owned by loadProfile() - it renders the signed-in
    user's own row from /api/profile. setRole only governs admin visibility. */
 if(r!=='organizer'&&document.getElementById('page-admin').classList.contains('active'))sP('schedule')}
 document.getElementById('roleSeg').addEventListener('click',function(e){var b=e.target.closest('button');if(b)setRole(b.dataset.role)});
