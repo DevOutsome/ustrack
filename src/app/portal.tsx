@@ -1,5 +1,5 @@
 'use client'
-import { useRef, useCallback } from 'react'
+import { useRef, useCallback, useEffect } from 'react'
 
 /**
  * Hosts the portal UI (public/app.html) in an iframe and injects the
@@ -12,6 +12,20 @@ import { useRef, useCallback } from 'react'
  */
 export default function Portal({ role, email }: { role: string; email: string }) {
   const iframeRef = useRef<HTMLIFrameElement>(null)
+
+  // Logout: the iframe sends a postMessage because it cannot call supabase.auth
+  // from a same-origin static HTML file (no JS client instance there).
+  useEffect(() => {
+    const handler = (e: MessageEvent) => {
+      if (e.data === 'logout') {
+        fetch('/api/auth/logout', { method: 'POST' }).then(() => {
+          window.location.href = '/login'
+        })
+      }
+    }
+    window.addEventListener('message', handler)
+    return () => window.removeEventListener('message', handler)
+  }, [])
 
   const handleLoad = useCallback(() => {
     const win = iframeRef.current?.contentWindow as unknown as { setRole?: (r: string) => void }
