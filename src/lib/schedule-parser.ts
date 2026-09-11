@@ -66,26 +66,44 @@ function splitCSVRows(csvText: string): string[] {
 
 // ── Category normalisation ────────────────────────────────────────────────
 
+/**
+ * Canonical categories (9). Each maps to exactly one portal behaviour:
+ *   meal                                  -> RSVP (I'm in / Skip) + Add to schedule
+ *   session/networking/visit/exercise/program -> Add to schedule
+ *   move/logistics/free                   -> dimmed, no buttons
+ * The sheet's Category dropdown must only offer these 9 values.
+ */
 const CATEGORY_MAP: Record<string, string> = {
   meal: 'meal',
-  lecture: 'lecture',
-  workshop: 'workshop',
-  fireside: 'fireside',
-  event: 'event',
-  'office hours': 'office_hours',
-  meeting: 'meeting',
+  session: 'session',
+  networking: 'networking',
+  visit: 'visit',
   exercise: 'exercise',
+  program: 'program',
   move: 'move',
+  logistics: 'logistics',
   free: 'free',
+  // Legacy values from pre-2026-09-11 sheets -> nearest canonical category
+  lecture: 'session',
+  workshop: 'session',
+  fireside: 'session',
+  'office hours': 'session',
+  meeting: 'session',
+  pitch: 'session',
+  orientation: 'program',
+  event: 'networking',
+  'group activity': 'session',
+  'house activity': 'logistics',
   'free time': 'free',
-  'group activity': 'group_activity',
-  'house activity': 'house_activity',
-  orientation: 'orientation',
+  break: 'free',
+  tour: 'visit',
 };
 
 function normaliseCat(raw: string): string {
   const key = raw.trim().toLowerCase();
-  return CATEGORY_MAP[key] ?? 'event';
+  // Unknown category defaults to 'session' (shows buttons) - wrongly dimming a real
+  // session is worse than wrongly showing an Add button on a chore.
+  return CATEGORY_MAP[key] ?? 'session';
 }
 
 // ── Day-of-week helpers ───────────────────────────────────────────────────
@@ -106,7 +124,8 @@ export interface ScheduleEvent {
   cat: string;     // normalised category key
   title: string;
   loc: string;
-  meal?: number;   // 1 if meal event
+  meal?: number;   // 1 if meal event (explicit "Is Meal?" column, never guessed)
+  att?: string;    // "Strongly Recommended" | "Recommended" | "Free Time"
   desc?: string;   // description / expected outcomes
   ctx?: string;    // context / speaker info
 }
@@ -129,7 +148,9 @@ function detectLayout(rows: string[][]): Layout {
   for (let i = 0; i < Math.min(rows.length, 10); i++) {
     const joined = rows[i].map(c => c.toLowerCase().trim()).join('|');
     // Match both "Day Title" and standalone column headers like "date|...|category|title"
-    if ((joined.includes('day title') || joined.includes('is meal')) && joined.includes('category')) return 'template';
+    // NOTE: do not key off "is meal" here - the existing Healthcare Track sheet also has
+    // an "Is Meal?" column now, and matching on it would misdetect it as the template layout.
+    if (joined.includes('day title') && joined.includes('category')) return 'template';
     // Also detect if first column header is "Date" and "Category" appears in any column
     if (rows[i][0]?.trim().toLowerCase() === 'date' && joined.includes('category')) return 'template';
   }
@@ -174,23 +195,30 @@ function parseExisting(rows: string[][]): ScheduleDay[] {
       const rawLoc = (cols[6] ?? '').trim();
       const rawCtx = (cols[7] ?? '').trim();
       const rawOut = (cols[8] ?? '').trim();
+      const rawMeal = (cols[9] ?? '').trim().toUpperCase();  // column J "Is Meal?"
+      const rawAtt = (cols[10] ?? '').trim();                // column K "Attendance"
 
       if (!rawTitle && !rawCat) continue; // skip empty rows
 
       const cat = normaliseCat(rawCat);
-      const cleanTitle = cleanText(rawTitle) || cleanText(rawCat);
+      const split = splitTitle(rawTitle);
       const ev: ScheduleEvent = {
         t: `${start}–${end}`,
         cat,
-        title: cleanTitle,
+        title: split.title || 'TBD',
         loc: cleanLocation(rawLoc),
       };
 
-      if (cat === 'meal' || /meal/i.test(rawCat)) ev.meal = 1;
-      // Detect meals from title when category is not 'Meal'
-      if (/\b(breakfast|lunch|dinner)\b/i.test(cleanTitle) && !ev.meal) ev.meal = 1;
-      if (rawCtx) ev.ctx = cleanText(rawCtx).slice(0, 500);
-      if (rawOut) ev.desc = cleanText(rawOut).slice(0, 500);
+      // Meal flag is explicit only. Never infer it from the title: "Prep for Dinner" and
+      // "Move to Dinner" are chores, not meals, and used to pick up RSVP buttons that way.
+      if (rawMeal === 'TRUE' || rawMeal === '1') ev.meal = 1;
+      else if (!rawMeal && cat === 'meal') ev.meal = 1;  // sheets without the Is Meal? column
+      if (rawAtt) ev.att = rawAtt;
+      if (rawCtx) ev.ctx = cleanBody(rawCtx).slice(0, 900);
+      // Everything the card title could not hold, plus the "expected outcome" column,
+      // becomes the description shown in the event detail modal. Nothing is dropped.
+      const body = [split.sub, cleanBody(rawOut)].filter(Boolean).join('\n\n');
+      if (body) ev.desc = body.slice(0, 900);
 
       current.events.push(ev);
     }
@@ -224,6 +252,7 @@ function parseTemplate(rows: string[][]): ScheduleDay[] {
     desc: header.findIndex(h => h.includes('description') || h === 'desc'),
     ctx: header.findIndex(h => h.includes('context') || h.includes('speaker')),
     isMeal: header.findIndex(h => h.includes('meal')),
+    att: header.findIndex(h => h.includes('attendance')),
   };
 
   const days: ScheduleDay[] = [];
@@ -263,22 +292,26 @@ function parseTemplate(rows: string[][]): ScheduleDay[] {
       const rawDesc = idx.desc >= 0 ? (cols[idx.desc] ?? '').trim() : '';
       const rawCtx = idx.ctx >= 0 ? (cols[idx.ctx] ?? '').trim() : '';
       const rawMeal = idx.isMeal >= 0 ? (cols[idx.isMeal] ?? '').trim().toUpperCase() : '';
+      const rawAtt = idx.att >= 0 ? (cols[idx.att] ?? '').trim() : '';
 
       if (!rawTitle && !rawCat) continue;
 
       const cat = normaliseCat(rawCat);
+      const splitT = splitTitle(rawTitle);
       const ev: ScheduleEvent = {
         t: `${start}–${end}`,
         cat,
-        title: rawTitle || rawCat,
+        title: splitT.title || 'TBD',
         loc: cleanLocation(rawLoc),
       };
 
-      if (cat === 'meal' || rawMeal === 'TRUE' || rawMeal === '1' || rawMeal === 'true') ev.meal = 1;
-      // Also detect meals from title
-      if (/\b(breakfast|lunch|dinner)\b/i.test(rawTitle) && !ev.meal) ev.meal = 1;
-      if (rawCtx) ev.ctx = rawCtx.slice(0, 500);
-      if (rawDesc) ev.desc = rawDesc.slice(0, 500);
+      // Explicit flag only - see the note in parseExisting().
+      if (rawMeal === 'TRUE' || rawMeal === '1') ev.meal = 1;
+      else if (idx.isMeal < 0 && cat === 'meal') ev.meal = 1;
+      if (rawAtt) ev.att = rawAtt;
+      if (rawCtx) ev.ctx = cleanBody(rawCtx).slice(0, 900);
+      const bodyT = [splitT.sub, cleanBody(rawDesc)].filter(Boolean).join('\n\n');
+      if (bodyT) ev.desc = bodyT.slice(0, 900);
 
       current.events.push(ev);
     }
@@ -296,6 +329,45 @@ function cleanLocation(loc: string): string {
 }
 
 /** Collapse excessive whitespace / newlines in a string. */
+/**
+ * Split a "Details" cell into a short card title plus a description body.
+ * The sheet packs everything into one cell, e.g.
+ *   "Fireside with Jin Kim (YC W23 Miracle) - An intro and “Lessons learned…”\n· bullet\n· bullet"
+ * A schedule card only has room for the first part, so the rest moves into the
+ * detail modal instead of being rendered as one unreadable run-on title.
+ */
+function splitTitle(raw: string): { title: string; sub: string } {
+  const text = (raw ?? '').replace(/\r\n/g, '\n').trim();
+  if (!text) return { title: '', sub: '' };
+  const nl = text.indexOf('\n');
+  let head = (nl >= 0 ? text.slice(0, nl) : text).trim();
+  let rest = nl >= 0 ? text.slice(nl + 1).trim() : '';
+  // A long single-line head is usually "Speaker/session name - topic".
+  // Keep the name on the card, push the topic into the body.
+  if (head.length > 52) {
+    const m = head.match(/\s[-–—]\s|:\s/);
+    if (m && m.index !== undefined && m.index > 8) {
+      const tail = head.slice(m.index + m[0].length).trim();
+      head = head.slice(0, m.index).trim();
+      rest = rest ? `${tail}\n${rest}` : tail;
+    }
+  }
+  // Drop dangling punctuation left behind by the split (e.g. "VC Round Table:").
+  const title = head.replace(/\s+/g, ' ').replace(/[\s:;,\u00b7\u2022\-\u2013\u2014]+$/, '').trim();
+  return { title, sub: cleanBody(rest) };
+}
+
+/** Like cleanText, but keeps line structure so bullet lists survive into the UI. */
+function cleanBody(s: string): string {
+  return (s ?? '')
+    .replace(/\r\n/g, '\n')
+    .split('\n')
+    .map(l => l.replace(/\s+/g, ' ').trim())
+    .filter((l, i, arr) => l !== '' || (i > 0 && arr[i - 1] !== ''))
+    .join('\n')
+    .trim();
+}
+
 function cleanText(s: string): string {
   return s
     .replace(/\r\n/g, '\n')
