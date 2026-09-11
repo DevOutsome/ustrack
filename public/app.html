@@ -353,6 +353,22 @@ h1.page-title{font-size:28px;font-weight:800;letter-spacing:-.7px;margin-bottom:
 /* Attendance marker - plain small caps, not a coloured pill */
 .req{display:inline-block;margin-left:7px;font-size:9.5px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--muted);opacity:.75;vertical-align:2px}
 .wg-empty{font-size:13px;color:var(--muted);padding:10px 0}
+/* In-flight RSVP: the button is inert until the server confirms the write */
+.add-btn.pending,.meal-seg button.pending{opacity:.55;cursor:default;box-shadow:none}
+.spin{display:inline-block;width:11px;height:11px;margin-right:6px;vertical-align:-1px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* Profile form */
+.setup-note{margin:0 0 16px;padding:11px 14px;border-radius:10px;background:#FDF6E3;border:1px solid #EADFC2;font-size:13px;color:#7A5E1E;line-height:1.5}
+.pf{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.pf label{font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--muted)}
+.pf input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:9px;background:#fff;font:inherit;font-size:14px;color:var(--text);transition:border-color .18s}
+.pf input:focus{outline:none;border-color:var(--brand)}
+.pf input::placeholder{color:#B8B2A8}
+.pf-help{font-size:12px;color:var(--muted);margin:-4px 0 12px;line-height:1.5}
+.pf-actions{display:flex;align-items:center;gap:12px;margin:4px 0 24px}
+.pf-status{font-size:12.5px;color:var(--muted)}
+.pf-status.ok{color:var(--green);font-weight:600}
+.pf-status.err{color:var(--red);font-weight:600}
 .agenda-row.housekeeping{opacity:.45}
 .agenda-row.housekeeping .ec-badge{opacity:.6}
 .agenda-row.housekeeping .ch{display:none}
@@ -392,8 +408,7 @@ h1.page-title{font-size:28px;font-weight:800;letter-spacing:-.7px;margin-bottom:
 </div>
 <div class="page" id="page-people"><h1 class="page-title">People</h1><p class="page-sub">Participants, speakers, VCs, and mentors</p><div class="chips" id="peopleFilters"></div><div class="people-grid" id="peopleGrid"></div></div>
 <div class="page" id="page-info"><h1 class="page-title">Info</h1><p class="page-sub">Everything you need to know</p><div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input placeholder="Search info & FAQ..." id="infoSearch"></div><div id="infoContent"></div></div>
-<div class="page" id="page-profile"><div style="display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 0 0"><span style="font-size:12px;font-weight:600;color:var(--muted)">View as:</span><div class="seg" id="roleSeg"><button class="active" data-role="organizer">Organizer</button><button data-role="participant">Participant</button></div></div><div class="prof-head"><div class="prof-av" id="profAv">PS</div><div class="prof-name" id="profName">Peter Shin</div><div class="prof-handle" id="profHandle">@peter</div><div class="prof-detail" id="profDetail">Program Lead · Outsome · Seoul</div></div><div class="sec"><h3>🏨 My Stay</h3><div class="row"><span class="l">Location</span><span class="v">MARU SF</span></div><div class="row"><span class="l">Check-in</span><span class="v">Oct 18</span></div><div class="row"><span class="l">Check-out</span><span class="v">Nov 1</span></div></div><div class="sec"><h3>About</h3><div class="row"><span class="l">Company</span><span class="v">Outsome</span></div><div class="row"><span class="l">Role</span><span class="v">Managing Partner</span></div><div class="row"><span class="l">Languages</span><span class="v">KO, EN</span></div></div><div class="sec"><h3>🔒 Private</h3><div class="row"><span class="l">Korean Name</span><span class="v">신동엽</span></div><div class="row"><span class="l">Phone</span><span class="v">+82-10-****-0984</span></div><div class="row"><span class="l">Dietary</span><span class="v">None</span></div></div></div>
-<div class="page" id="page-announcements"><h1 class="page-title">Announcements</h1><p class="page-sub">Latest updates from the program team</p><div id="annList"></div></div>
+<div class="page" id="page-profile"><div style="display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 0 0"><span style="font-size:12px;font-weight:600;color:var(--muted)">View as:</span><div class="seg" id="roleSeg"><button class="active" data-role="organizer">Organizer</button><button data-role="participant">Participant</button></div></div><div class="prof-head"><div class="prof-av" id="profAv">…</div><div class="prof-name" id="profName">…</div><div class="prof-handle" id="profHandle"></div><div class="prof-detail" id="profDetail"></div></div><div id="profSetupNote" class="setup-note" style="display:none">Add your name and company so everyone knows who you are.</div><div class="sec"><h3>My details</h3><div class="pf"><label for="pfName">Name</label><input id="pfName" maxlength="80" placeholder="e.g. Jinwoo Park"></div><div class="pf"><label for="pfCompany">Company</label><input id="pfCompany" maxlength="80" placeholder="e.g. Acme Health"></div><div class="pf"><label for="pfTitle">Role</label><input id="pfTitle" maxlength="80" placeholder="e.g. Co-founder &amp; CEO"></div><div class="pf"><label for="pfLocation">Based in</label><input id="pfLocation" maxlength="80" placeholder="e.g. Seoul"></div><div class="pf"><label for="pfLinkedin">LinkedIn</label><input id="pfLinkedin" maxlength="200" placeholder="https://linkedin.com/in/…"></div><div class="pf"><label for="pfBio">One line about you</label><input id="pfBio" maxlength="400" placeholder="What you are building, in one line"></div></div><div class="sec"><h3>🍽️ Dietary needs</h3><p class="pf-help">Shared with the team preparing meals. Leave empty if you eat anything.</p><div class="pf"><label for="pfDiet">Restrictions / allergies</label><input id="pfDiet" maxlength="200" placeholder="e.g. Vegetarian, no shellfish"></div></div><div class="pf-actions"><button class="add-btn" id="pfSave" onclick="saveProfile()">Save</button><span id="pfStatus" class="pf-status"></span></div><div class="sec"><h3>🏨 The stay</h3><div class="row"><span class="l">Location</span><span class="v">MARU SF · Burlingame, CA</span></div><div class="row"><span class="l">Program</span><span class="v">Oct 19 – Nov 1, 2026</span></div></div><div class="page" id="page-announcements"><h1 class="page-title">Announcements</h1><p class="page-sub">Latest updates from the program team</p><div id="annList"></div></div>
 <div class="page" id="page-admin"><div class="admin-header"><h1 class="page-title">Admin</h1><span class="badge">ADMIN</span></div>
 <div class="admin-tabs"><button class="admin-tab-btn active" data-atab="meals" onclick="switchAdminTab('meals')">Meal Dashboard</button><button class="admin-tab-btn" data-atab="sync" onclick="switchAdminTab('sync')">Schedule Sync</button></div>
 <div id="adminTabMeals"><p class="page-sub">식수 현황 · Bernice용</p><div class="date-nav" style="margin-bottom:20px"><button class="date-arrow" id="admPrev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><div class="day-title" id="admTitle" style="text-align:center;flex:1"></div><button class="date-arrow" id="admNext"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button></div><div id="adminContent"></div></div>
@@ -574,24 +589,61 @@ function burst(el,color){var b=document.createElement('div');b.className='burst'
 function bump(el){el.classList.remove('bump');void el.offsetWidth;el.classList.add('bump')}
 
 /* IN-PLACE TOGGLE - no full re-render */
-function tR(id,btn){var was=!!rsvps[id];rsvps[id]=!was;if(!rsvps[id])delete rsvps[id];_ls.s('ht_r',JSON.stringify(rsvps));
-if(!was){btn.classList.add('added');btn.innerHTML=IC.check+'Added';bump(btn);burst(btn,'#1F4D1A');toast(IC.check+' Added to my schedule','green');var card=btn.closest('.event-card')||btn.closest('.modal-actions');if(card){var dot=card.querySelector('.added-dot');if(!dot){dot=document.createElement('div');dot.className='added-dot';dot.innerHTML=IC.check;card.appendChild(dot)}}
-/* If meal event, auto-set 참석 */
-var seg=card?card.querySelector('.meal-seg'):null;if(!seg){var p=btn.closest('.modal-actions');if(p)seg=p.querySelector('.meal-seg')}if(seg&&meals[id]!=='yes'){meals[id]='yes';_ls.s('ht_m',JSON.stringify(meals));var yb=seg.querySelector('.yes'),nb=seg.querySelector('.no');if(yb){yb.classList.add('on');bump(yb)}if(nb)nb.classList.remove('on')}}else{btn.classList.remove('added');btn.innerHTML=IC.plus+'Add to schedule';toast(IC.x+' Removed','');var card=btn.closest('.event-card')||btn.closest('.modal-actions');if(card){var dot=card.querySelector('.added-dot');if(dot)dot.remove()}
-/* Also clear meal RSVP */
-var seg=card?card.querySelector('.meal-seg'):null;if(seg&&meals[id]){delete meals[id];_ls.s('ht_m',JSON.stringify(meals));seg.querySelectorAll('button').forEach(function(b){b.classList.remove('on')})}}
-bumpCount(id);
-saveRsvp(id);
-/* The modal is refreshed from the remembered day/index - the event key is no
-   longer "day-index", so it cannot be parsed back into coordinates. */
-if(document.getElementById('eventModal').classList.contains('open')&&_mDay!==null){oM(_mDay,_mIdx,true)}}
+/* ---- RSVP TOGGLES ----
+   Nothing is announced as done until the server has stored it. The button goes
+   into a pending state on click, and only a successful write produces the
+   confirmation toast and the burst. A failed write rolls the state back, so a
+   participant never sees "Added" for something that did not reach the database. */
+function rootOf(btn){return btn&&(btn.closest('.event-card')||btn.closest('.modal-actions'))}
+function setPending(root,on){if(!root)return;
+root.querySelectorAll('.add-btn,.meal-seg button').forEach(function(b){b.disabled=on;b.classList.toggle('pending',on)})}
+/* Paint current local state onto one card - used to apply AND to roll back. */
+function paintRsvp(id,root){if(!root)return;
+var on=!!rsvps[id],mv=meals[id]||null;
+var ab=root.querySelector('.add-btn');
+if(ab){ab.classList.toggle('added',on);ab.innerHTML=on?IC.check+'Added':IC.plus+'Add to schedule'}
+var dot=root.querySelector('.added-dot');
+if(on&&!dot){dot=document.createElement('div');dot.className='added-dot';dot.innerHTML=IC.check;root.appendChild(dot)}
+if(!on&&dot)dot.remove();
+var seg=root.querySelector('.meal-seg');
+if(seg){var yb=seg.querySelector('.yes'),nb=seg.querySelector('.no');
+if(yb)yb.classList.toggle('on',mv==='yes');
+if(nb)nb.classList.toggle('on',mv==='no')}}
 
-function tM(id,v,btn){var same=meals[id]===v;if(same)delete meals[id];else meals[id]=v;_ls.s('ht_m',JSON.stringify(meals));setTimeout(function(){bumpCount(id);saveRsvp(id)},0);
-var seg=btn.closest('.meal-seg');var btns=seg.querySelectorAll('button');btns.forEach(function(b){b.classList.remove('on')});if(!same){btn.classList.add('on');bump(btn);if(v==='yes'){burst(btn,'#2F2C26');toast(IC.check+' You\'re in','green');
-/* Auto add to schedule */
-if(!rsvps[id]){rsvps[id]=true;_ls.s('ht_r',JSON.stringify(rsvps));var card=btn.closest('.event-card')||btn.closest('.modal-actions');if(card){var ab=card.querySelector('.add-btn');if(ab){ab.classList.add('added');ab.innerHTML=IC.check+'Added'}var dot=card.querySelector('.added-dot');if(!dot){dot=document.createElement('div');dot.className='added-dot';dot.innerHTML=IC.check;card.appendChild(dot)}}}}else{toast(IC.x+' Skipping this meal','');
-/* Auto remove from schedule */
-if(rsvps[id]){delete rsvps[id];_ls.s('ht_r',JSON.stringify(rsvps));var card=btn.closest('.event-card')||btn.closest('.modal-actions');if(card){var ab=card.querySelector('.add-btn');if(ab){ab.classList.remove('added');ab.innerHTML=IC.plus+'Add to schedule'}var dot=card.querySelector('.added-dot');if(dot)dot.remove()}}}}else{toast(IC.x+' Cleared','')}}
+async function commitRsvp(id,root,btn,prev,onOk){
+setPending(root,true);
+if(btn)btn.innerHTML='<span class="spin"></span>Saving\u2026';
+try{
+await saveRsvp(id);
+_ls.s('ht_r',JSON.stringify(rsvps));_ls.s('ht_m',JSON.stringify(meals));
+bumpCount(id);
+setPending(root,false);paintRsvp(id,root);
+onOk();
+}catch(e){
+if(prev.r===undefined)delete rsvps[id];else rsvps[id]=prev.r;
+if(prev.m===undefined)delete meals[id];else meals[id]=prev.m;
+setPending(root,false);paintRsvp(id,root);
+toast(IC.x+' Not saved \u2014 '+e.message,'');
+}
+if(document.getElementById('eventModal').classList.contains('open')&&_mDay!==null)oM(_mDay,_mIdx,true)}
+
+async function tR(id,btn){
+var root=rootOf(btn),prev={r:rsvps[id],m:meals[id]},was=!!rsvps[id];
+var hasMeal=!!(root&&root.querySelector('.meal-seg'));
+if(was){delete rsvps[id];if(meals[id])delete meals[id]}
+else{rsvps[id]=true;if(hasMeal)meals[id]='yes'}
+await commitRsvp(id,root,btn,prev,function(){
+if(!was){bump(btn);burst(btn,'#1F4D1A');toast(IC.check+' Saved \u00b7 added to your schedule','green')}
+else toast(IC.x+' Removed from your schedule','')})}
+
+async function tM(id,v,btn){
+var root=rootOf(btn),prev={r:rsvps[id],m:meals[id]},same=meals[id]===v;
+if(same)delete meals[id];
+else{meals[id]=v;if(v==='yes')rsvps[id]=true;else delete rsvps[id]}
+await commitRsvp(id,root,btn,prev,function(){
+if(same){toast(IC.x+' Cleared','');return}
+if(v==='yes'){bump(btn);burst(btn,'#2F2C26');toast(IC.check+' Saved \u00b7 you\'re in','green')}
+else toast(IC.check+' Saved \u00b7 skipping this meal','')})}
 
 /* ---- EVENT INTERACTION RULES (single source of truth) ----
    meal                                      -> I'm in / Skip + Add to schedule
@@ -617,7 +669,7 @@ function rA(){document.getElementById('annList').innerHTML=ANN.map(function(a){r
 
 /* ADMIN - Meal Dashboard */
 function checkinHtml(day){
-var npsKey='nps_'+day,saved=_ls.g(npsKey);
+var saved=npsDone[day];
 if(saved)return'<div class="checkin"><div class="checkin-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>Daily NPS</div><div class="nps"><div class="nps-sent">'+IC.check+'Thanks for today\'s feedback!</div></div></div>';
 return'<div class="checkin"><div class="checkin-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>Daily NPS</div>'+
 '<div class="nps" id="npsRate"><h4>How was today?</h4><div class="emoji-row" id="emojiRow">'+
@@ -629,21 +681,64 @@ return'<div class="checkin"><div class="checkin-title"><svg viewBox="0 0 24 24" 
 '</div><textarea class="issue-text" id="issueInput" placeholder="Describe the issue..."></textarea></div>'+
 '<div class="nps" id="npsDone" style="display:none"><button class="issue-submit" onclick="finishNPS('+day+')" style="margin-top:0">Submit Daily NPS</button></div></div>'}
 var npsD={};
+/* Daily check-ins and issue reports live on the server (/api/feedback).
+   npsDone = days this user already submitted; serverNPS / serverIssues are what
+   the admin panel reads. These were localStorage-only, which meant a reported
+   issue never left the reporter's browser. */
+var npsDone={},serverNPS=[],serverIssues=[];
+async function loadFeedback(){
+try{
+var r=await fetch('/api/feedback');if(!r.ok)return;
+var d=await r.json();
+npsDone=d.myDays||{};serverNPS=d.nps||[];serverIssues=d.issues||[];
+if(document.getElementById('scheduleList'))rS();
+if(document.getElementById('adminContent'))rAdmin();
+console.log('[Feedback] '+serverNPS.length+' check-ins, '+serverIssues.length+' issues');
+}catch(e){console.log('[Feedback] load failed',e)}
+}
+async function postFeedback(payload){
+var r=await fetch('/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+var d=await r.json().catch(function(){return{}});
+if(!r.ok)throw new Error(d.error||'Could not submit');
+return d}
 function pickEmoji(day,val,btn){document.querySelectorAll('#emojiRow .emoji-btn').forEach(function(b){b.classList.remove('selected')});btn.classList.add('selected');npsD.rating=val;burst(btn,'#2F2C26');setTimeout(function(){var el1=document.getElementById('npsHL');var el2=document.getElementById('issueForm');var el3=document.getElementById('npsDone');if(el1)el1.style.display='';if(el2)el2.style.display='';if(el3)el3.style.display=''},400)}
 function submitHL(day){}
-function finishNPS(day){var issEl=document.getElementById('issueInput');if(issEl&&issEl.value){var iss=JSON.parse(_ls.g('issues')||'[]');var catEl=document.querySelector('#issueCats .on');npsD.issueCat=catEl?catEl.textContent:'Other';npsD.issue=issEl.value;iss.push({day:day,cat:npsD.issueCat,text:issEl.value,from:'Peter Shin',time:'Just now'});_ls.s('issues',JSON.stringify(iss))}npsD.highlight=document.getElementById('hlInput')?document.getElementById('hlInput').value:'';_ls.s('nps_'+day,JSON.stringify(npsD));toast(IC.check+' Daily NPS submitted!','green');setTimeout(function(){rS()},600)}
+async function finishNPS(day){
+var issEl=document.getElementById('issueInput');
+var catEl=document.querySelector('#issueCats .on');
+var hl=document.getElementById('hlInput')?document.getElementById('hlInput').value:'';
+var payload={day:day,rating:npsD.rating,highlight:hl};
+if(issEl&&issEl.value.trim())payload.issue={category:catEl?catEl.textContent.trim():'Other',text:issEl.value.trim()};
+try{
+await postFeedback(payload);
+npsDone[day]={rating:npsD.rating,highlight:hl};
+await loadFeedback();
+toast(IC.check+' Daily NPS submitted!','green');
+}catch(e){toast(IC.x+' '+e.message,'')}
+}
 function pickIC(btn){document.querySelectorAll('#issueCats .issue-cat').forEach(function(b){b.classList.remove('on')});btn.classList.add('on');npsD.issueCat=btn.textContent}
-function submitIss(day){var txt=document.getElementById('issueInput').value;if(!txt)return;var iss=JSON.parse(_ls.g('issues')||'[]');iss.push({day:day,cat:npsD.issueCat||'Other',text:txt,from:'Peter Shin',time:'Just now'});_ls.s('issues',JSON.stringify(iss));toast(IC.check+' Issue reported','green');document.getElementById('issueInput').value='';document.querySelectorAll('#issueCats .issue-cat').forEach(function(b){b.classList.remove('on')})}
+async function submitIss(day){
+var el=document.getElementById('issueInput'),txt=el?el.value.trim():'';
+if(!txt)return;
+try{
+await postFeedback({day:day,issue:{category:npsD.issueCat||'Other',text:txt}});
+el.value='';
+document.querySelectorAll('#issueCats .issue-cat').forEach(function(b){b.classList.remove('on')});
+await loadFeedback();
+toast(IC.check+' Issue reported','green');
+}catch(e){toast(IC.x+' '+e.message,'')}
+}
 
 function rAdmin(){var d=S.find(function(x){return x.day===admDay});if(!d)return;
 document.getElementById('admTitle').innerHTML='<b>Day '+d.day+' \u00b7 '+d.dow+', Oct '+d.date.split('/')[1]+'</b><small>'+d.theme+'</small>';
 document.getElementById('admPrev').disabled=admDay<=1;document.getElementById('admNext').disabled=admDay>=S.length;
 var mealEv=[],moveEv=[];d.events.forEach(function(ev,i){if(ev.meal)mealEv.push({ev:ev,idx:i});if(ev.cat==='move')moveEv.push({ev:ev,idx:i})});
-var issues=JSON.parse(_ls.g('issues')||'[]');var dayIssues=issues.filter(function(x){return x.day===admDay||x.day===admDay-1});
+/* Real submissions from every participant, not this browser's localStorage. */
+var dayIssues=serverIssues.filter(function(x){return x.day===admDay||x.day===admDay-1});
 /* Real counts only. Every number below comes from rsvpCounts (server) and the
    roster in P; nothing here may be generated. Bernice buys food off this page. */
 var totalNA=0;mealEv.forEach(function(me){var c=rsvpCounts[eid(d.day,me.idx)]||{};var answered=((c.yesPeople||[]).length+(c.noPeople||[]).length);totalNA+=Math.max(0,P.length-answered)});
-var npsScores=[];for(var dd=Math.max(1,admDay-2);dd<=admDay;dd++){var nd=_ls.g('nps_'+dd);if(nd)try{npsScores.push(JSON.parse(nd))}catch(e){}}
+var npsScores=serverNPS.filter(function(x){return x.day>=Math.max(1,admDay-2)&&x.day<=admDay&&x.rating!=null});
 var h='';
 h+='<div class="ops-grid">';
 /* Meals - one card with 3 rows */
@@ -666,7 +761,7 @@ var icon=me.ev.title.toLowerCase().indexOf('breakfast')>=0||me.ev.title.toLowerC
 h+='<div class="meal-card"><div class="meal-card-header"><div class="meal-card-title"><div class="icon">'+icon+'</div><h3>'+me.ev.title+'<small>'+me.ev.t+(me.ev.loc?' \u00b7 '+me.ev.loc:'')+'</small></h3></div><div class="stat-pills"><span class="stat-pill yes">In '+yes.length+'</span><span class="stat-pill no">Skip '+no.length+'</span><span class="stat-pill na">No reply '+na.length+'</span></div></div>';h+='<div style="margin-top:10px">';if(yes.length)h+='<div style="font-size:10px;font-weight:700;color:var(--green);margin-bottom:4px;letter-spacing:.5px">ATTENDING ('+yes.length+')</div><div class="attendee-list" style="margin-bottom:8px">';yes.forEach(function(p){h+='<span class="att-chip"><span class="dot-g"></span>'+p.name+'</span>'});h+='</div>';if(no.length)h+='<div style="font-size:10px;font-weight:700;color:var(--red);margin-bottom:4px;letter-spacing:.5px">NOT ATTENDING ('+no.length+')</div><div class="attendee-list" style="margin-bottom:8px">';no.forEach(function(p){h+='<span class="att-chip"><span class="dot-r"></span>'+p.name+'</span>'});h+='</div>';if(na.length)h+='<div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:4px;letter-spacing:.5px">NO REPLY ('+na.length+')</div><div class="attendee-list">';na.forEach(function(p){h+='<span class="att-chip"><span class="dot-na"></span>'+p.name+'</span>';if(noResp.indexOf(p.name)<0)noResp.push(p.name)});h+='</div>';h+='</div>';if(diets.length)h+='<div class="dietary-note">\ud83c\udf7d\ufe0f <b>Dietary:</b> '+diets.join(', ')+'</div>';h+='</div>'});
 if(noResp.length)h+='<div class="warn-box"><div class="icon">\u26a0\ufe0f</div><p><b>'+noResp.length+' no reply:</b> '+noResp.join(', ')+'<br>Send KakaoTalk RSVP reminder.</p></div>';h+='</div>'}
 /* Founder Sentiment - gather all days */
-var allNPS=[];for(var nd=1;nd<=13;nd++){var ndd=_ls.g('nps_'+nd);if(ndd)try{var parsed=JSON.parse(ndd);parsed.day=nd;allNPS.push(parsed)}catch(e){}}
+var allNPS=serverNPS.filter(function(x){return x.rating!=null});
 if(allNPS.length){var avg=0;allNPS.forEach(function(n){avg+=n.rating});avg=(avg/allNPS.length).toFixed(1);
 h+='<div class="sec"><h3>\ud83d\udcca Founder Sentiment</h3>';
 h+='<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px"><div style="text-align:center;flex-shrink:0"><div style="font-size:28px;font-weight:800;letter-spacing:-1.5px;color:var(--text)">'+avg+'</div><div style="font-size:9px;font-weight:600;color:var(--muted);letter-spacing:.3px">AVG / 5</div></div><div style="flex:1;min-width:0;max-width:240px">';
@@ -709,12 +804,9 @@ document.getElementById('infoSearch').addEventListener('input',rI);
 document.getElementById('admPrev').addEventListener('click',function(){if(admDay>1){admDay--;rAdmin()}});
 document.getElementById('admNext').addEventListener('click',function(){if(admDay<S.length){admDay++;rAdmin()}});
 document.addEventListener('keydown',function(e){if(e.key==='Escape')cM()});
-function setRole(r){curRole=r;document.getElementById('adminTab').style.display=r==='organizer'?'':'none';document.querySelectorAll('#roleSeg button').forEach(function(b){b.classList.toggle('active',b.dataset.role===r)});/* Show the person who is actually signed in. This used to render a canned
-   identity ('Participant A-1'), so every participant saw a stranger's name as
-   their own profile. */
-var mine=P.filter(function(x){return x.id===myUserId})[0]||null;
-var p=mine?{av:ini(mine.name),name:mine.name,handle:'@'+String(mine.email||mine.name).split('@')[0],detail:[mine.title,mine.co].filter(Boolean).join(' · ')||(r==='organizer'?'Organizer':'Participant')}
-:{av:'…',name:myName||'…',handle:'',detail:'Loading your profile…'};document.getElementById('profAv').textContent=p.av;document.getElementById('profName').textContent=p.name;document.getElementById('profHandle').textContent=p.handle;document.getElementById('profDetail').textContent=p.detail;if(r!=='organizer'&&document.getElementById('page-admin').classList.contains('active'))sP('schedule')}
+function setRole(r){curRole=r;document.getElementById('adminTab').style.display=r==='organizer'?'':'none';document.querySelectorAll('#roleSeg button').forEach(function(b){b.classList.toggle('active',b.dataset.role===r)});/* The profile header is owned by loadProfile() - it renders the signed-in
+   user's own row from /api/profile. setRole only governs admin visibility. */
+if(r!=='organizer'&&document.getElementById('page-admin').classList.contains('active'))sP('schedule')}
 document.getElementById('roleSeg').addEventListener('click',function(e){var b=e.target.closest('button');if(b)setRole(b.dataset.role)});
 setRole('organizer');
 
@@ -807,6 +899,51 @@ el.innerHTML='<b>Last synced:</b> '+d.toLocaleString('ko-KR')+(data.syncedBy?' \
 }catch(e){}
 }
 
+/* ── Profile: everyone fills in their own row. ── */
+var myProfile=null;
+function pfVal(id){var el=document.getElementById(id);return el?el.value.trim():''}
+function fillProfileForm(p){
+myProfile=p||{};
+var set=function(id,v){var el=document.getElementById(id);if(el)el.value=v||''};
+set('pfName',p&&p.display_name);set('pfCompany',p&&p.company);set('pfTitle',p&&p.title);
+set('pfLocation',p&&p.location);set('pfBio',p&&p.bio);set('pfDiet',p&&p.diet);
+set('pfLinkedin',p&&p.social_links&&p.social_links.linkedin);
+var head=document.getElementById('profName');
+if(head&&p){
+document.getElementById('profAv').textContent=p.display_name?ini(p.display_name):'\u2026';
+head.textContent=p.display_name||'\u2026';
+document.getElementById('profHandle').textContent='@'+String(p.email||'').split('@')[0];
+document.getElementById('profDetail').textContent=[p.title,p.company,p.location].filter(Boolean).join(' \u00b7 ');
+}}
+async function loadProfile(){
+try{
+var r=await fetch('/api/profile');if(!r.ok)return;
+var d=await r.json();
+fillProfileForm(d.profile);
+var note=document.getElementById('profSetupNote');
+if(note)note.style.display=d.needsSetup?'block':'none';
+}catch(e){console.log('[Profile] load failed',e)}
+}
+async function saveProfile(){
+var st=document.getElementById('pfStatus'),btn=document.getElementById('pfSave');
+var name=pfVal('pfName');
+if(!name){st.className='pf-status err';st.textContent='Name is required';return}
+btn.disabled=true;st.className='pf-status';st.textContent='Saving\u2026';
+try{
+var r=await fetch('/api/profile',{method:'PUT',headers:{'Content-Type':'application/json'},
+body:JSON.stringify({display_name:name,company:pfVal('pfCompany'),title:pfVal('pfTitle'),
+location:pfVal('pfLocation'),bio:pfVal('pfBio'),diet:pfVal('pfDiet'),linkedin:pfVal('pfLinkedin')})});
+var d=await r.json();
+if(!r.ok)throw new Error(d.error||'Save failed');
+fillProfileForm(d.profile);
+var note=document.getElementById('profSetupNote');if(note)note.style.display='none';
+st.className='pf-status ok';st.textContent='Saved';
+setTimeout(function(){if(st.textContent==='Saved')st.textContent=''},2500);
+await loadPeople();   /* name change must show up in People and the admin lists */
+}catch(e){st.className='pf-status err';st.textContent=e.message}
+finally{btn.disabled=false}
+}
+
 /* ── Roster. P starts as a built-in sample and is replaced by real signups. ── */
 async function loadPeople(){
 try{
@@ -822,16 +959,11 @@ console.log('[People] Loaded '+P.length+' signed-up participants');}
 }catch(e){console.log('[People] Fetch failed, keeping built-in roster',e);}
 }
 
-/* ── Persist one RSVP row. Optimistic UI already updated; this writes through. ── */
+/* ── Persist one RSVP row. Throws on failure so the caller can roll back. ── */
 async function saveRsvp(id){
-try{
 var res=await fetch('/api/rsvp',{method:'PUT',headers:{'Content-Type':'application/json'},
 body:JSON.stringify({eventKey:id,status:meals[id]||null,addedToSchedule:!!rsvps[id]})});
-if(!res.ok){var e=await res.json().catch(function(){return{}});throw new Error(e.error||res.status)}
-}catch(err){
-console.error('[RSVP] save failed',id,err);
-toast(IC.x+' Could not save - check your connection','');
-}
+if(!res.ok){var e=await res.json().catch(function(){return{}});throw new Error(e.error||('HTTP '+res.status))}
 }
 
 /* ── Load schedule, then RSVPs, on init ── */
@@ -858,6 +990,8 @@ console.log('[RSVP] Loaded '+Object.keys(rsvps).length+' of mine, '+Object.keys(
 }
 }catch(e){console.log('[RSVP] Fetch failed, using local cache',e);}
 await loadPeople();
+await loadProfile();
+await loadFeedback();
 })();
 
 rDT();rS();
