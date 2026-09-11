@@ -44,8 +44,19 @@ a{color:inherit;text-decoration:none}button{font:inherit;cursor:pointer;border:n
    gets repainted a second later. */
 #splash{position:fixed;inset:0;z-index:9999;background:var(--bg);display:grid;place-items:center;transition:opacity .35s var(--ease),visibility .35s}
 #splash.gone{opacity:0;visibility:hidden;pointer-events:none}
-#splash svg{width:40px;height:40px;animation:splashPulse 1.4s ease-in-out infinite}
+#splash .ld{margin:0 auto}
 #splash .lbl{margin-top:12px;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}
+/* Brand loader. The symbol's own dot - same size, same colour - revolves around the ring. One mark for every loading state in the app. */
+.ld{display:inline-block;vertical-align:middle;flex-shrink:0;line-height:0}
+.ld svg{width:100%;height:100%;display:block;overflow:visible}
+.ld .ld-ring{fill:currentColor}
+.ld .ld-dot{fill:currentColor;transform-box:view-box;transform-origin:426.622px 427.599px;animation:ldOrbit 1.4s linear infinite}
+.ld-sm{width:15px;height:15px;margin-right:7px}
+@keyframes ldOrbit{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){
+.ld .ld-dot{animation:none}
+.ld svg{animation:splashPulse 1.4s ease-in-out infinite}}
+
 @keyframes splashPulse{0%,100%{opacity:.35;transform:scale(.96)}50%{opacity:1;transform:scale(1)}}
 /* Notification panel — compact, clean */
 .notif-overlay{display:none;position:fixed;inset:0;z-index:999}
@@ -240,6 +251,27 @@ h1.page-title{font-size:28px;font-weight:800;letter-spacing:-.7px;margin-bottom:
 .sec{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:12px;box-shadow:var(--sh-sm)}
 .sec h3{font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:6px}
 .row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;font-size:14px;border-bottom:1px solid var(--border)}.row:last-child{border:none;padding-bottom:0}.row .l{color:var(--muted);font-size:13px}.row .v{font-weight:600}
+
+/* Profile skeleton. /api/profile resolves a beat after the tab paints, so the
+   header would otherwise sit on "…" with empty inputs. Shimmer until it lands,
+   and never leave the shimmer up - a stuck skeleton reads as a frozen app. */
+@keyframes pfSkel{0%{background-position:-180% 0}100%{background-position:180% 0}}
+#page-profile.pf-loading .prof-av,
+#page-profile.pf-loading .prof-name,
+#page-profile.pf-loading .prof-handle,
+#page-profile.pf-loading .prof-detail,
+#page-profile.pf-loading .pf input{background:linear-gradient(90deg,#EFE9DF 25%,#F8F5EF 37%,#EFE9DF 63%);background-size:180% 100%;animation:pfSkel 1.5s ease-in-out infinite;color:transparent!important;border-color:transparent!important;box-shadow:none;pointer-events:none}
+#page-profile.pf-loading .prof-av{border-color:#fff}
+#page-profile.pf-loading .prof-av>*{display:none}
+#page-profile.pf-loading .prof-name{width:150px;height:24px;border-radius:7px;margin:0 auto 7px}
+#page-profile.pf-loading .prof-handle{width:104px;height:13px;border-radius:5px;margin:0 auto}
+#page-profile.pf-loading .prof-detail{width:186px;height:13px;border-radius:5px;margin:8px auto 0}
+#page-profile.pf-loading .pf input::placeholder{color:transparent}
+#page-profile.pf-loading #pfSave{opacity:.4;pointer-events:none}
+.pf-av-ld{display:none;width:32px;height:32px;color:#C4B9A8}
+#page-profile.pf-loading .prof-av>.pf-av-ld{display:inline-block}
+.pf-retry{text-align:center;font-size:13px;color:var(--muted);margin:0 0 14px}
+.pf-retry button{background:none;border:none;color:var(--brand);font-size:13px;font-weight:700;cursor:pointer;text-decoration:underline;padding:0 2px}
 
 /* ANNOUNCEMENTS */
 .ann{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;margin-bottom:10px;cursor:pointer;transition:all .25s var(--ease);box-shadow:var(--sh-sm)}.ann:hover{box-shadow:var(--sh)}
@@ -573,7 +605,7 @@ h1.page-title{font-size:24px;letter-spacing:-.6px}
 </style>
 </head>
 <body>
-<div id="splash"><div style="text-align:center"><svg viewBox="0 0 854 854" fill="none"><path d="M807 132.751C807 167.96 778.532 196.502 743.415 196.502C708.298 196.502 679.83 167.96 679.83 132.751C679.83 97.5422 708.298 69 743.415 69C778.532 69 807 97.5422 807 132.751Z" fill="#2F2C26"/><path d="M616.242 427.599C616.242 322.601 531.346 237.484 426.622 237.484C321.898 237.484 237.003 322.601 237.003 427.599C237.003 532.596 321.898 617.713 426.622 617.713V727C261.698 727 128 592.953 128 427.599C128 262.244 261.698 128.197 426.622 128.197C591.547 128.197 725.245 262.244 725.245 427.599C725.245 592.953 591.547 727 426.622 727V617.713C531.346 617.713 616.242 532.596 616.242 427.599Z" fill="#2F2C26"/></svg><div class="lbl">Loading your schedule</div></div></div>
+<div id="splash"><div style="text-align:center"><span class="ld" style="width:46px;height:46px;color:#2F2C26"><svg viewBox="0 0 854 854" aria-hidden="true"><path class="ld-ring" d="M616.242 427.599C616.242 322.601 531.346 237.484 426.622 237.484C321.898 237.484 237.003 322.601 237.003 427.599C237.003 532.596 321.898 617.713 426.622 617.713V727C261.698 727 128 592.953 128 427.599C128 262.244 261.698 128.197 426.622 128.197C591.547 128.197 725.245 262.244 725.245 427.599C725.245 592.953 591.547 727 426.622 727V617.713C531.346 617.713 616.242 532.596 616.242 427.599Z"/><circle class="ld-dot" cx="743.415" cy="132.751" r="63.585"/></svg></span><div class="lbl">Loading your schedule</div></div></div>
 <nav class="nav">
 <svg class="nav-logo" viewBox="0 0 854 854" fill="none" aria-label="Outsome"><path d="M807 132.751C807 167.96 778.532 196.502 743.415 196.502C708.298 196.502 679.83 167.96 679.83 132.751C679.83 97.5422 708.298 69 743.415 69C778.532 69 807 97.5422 807 132.751Z" fill="#2F2C26"/><path d="M616.242 427.599C616.242 322.601 531.346 237.484 426.622 237.484C321.898 237.484 237.003 322.601 237.003 427.599C237.003 532.596 321.898 617.713 426.622 617.713V727C261.698 727 128 592.953 128 427.599C128 262.244 261.698 128.197 426.622 128.197C591.547 128.197 725.245 262.244 725.245 427.599C725.245 592.953 591.547 727 426.622 727V617.713C531.346 617.713 616.242 532.596 616.242 427.599Z" fill="#2F2C26"/></svg>
 <div class="nav-brand"><b>US Healthcare Track</b><small>Oct 19–Nov 1, 2026 · San Francisco, CA</small></div>
@@ -610,8 +642,8 @@ h1.page-title{font-size:24px;letter-spacing:-.6px}
 </div>
 <div class="page" id="page-people"><h1 class="page-title">People</h1><p class="page-sub">Participants, speakers, VCs, and mentors</p><div class="chips" id="peopleFilters"></div><div class="people-grid" id="peopleGrid"></div></div>
 <div class="page" id="page-info"><h1 class="page-title">Info</h1><p class="page-sub">Everything you need to know</p><div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input placeholder="Search info & FAQ..." id="infoSearch"></div><div id="infoContent"></div></div>
-<div class="page" id="page-profile"><div style="display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 0 0"><span style="font-size:12px;font-weight:600;color:var(--muted)">View as:</span><div class="seg" id="roleSeg"><button class="active" data-role="organizer">Organizer</button><button data-role="participant">Participant</button></div></div><div class="prof-head"><div class="prof-av" id="profAv" style="cursor:pointer;position:relative" onclick="document.getElementById('avatarInput').click()" title="Change photo">…<div class="prof-av-edit">✎</div></div>
-<input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="uploadAvatar(this)"><div class="prof-name" id="profName">…</div><div class="prof-handle" id="profHandle"></div><div class="prof-detail" id="profDetail"></div></div><div id="profSetupNote" class="setup-note" style="display:none">Add your name and company so everyone knows who you are.</div><div class="sec"><h3>My details</h3><div class="pf"><label for="pfName">Name</label><input id="pfName" maxlength="80" placeholder="e.g. Jinwoo Park"></div><div class="pf"><label for="pfCompany">Company</label><input id="pfCompany" maxlength="80" placeholder="e.g. Acme Health" list="companyList">
+<div class="page pf-loading" id="page-profile"><div style="display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 0 0"><span style="font-size:12px;font-weight:600;color:var(--muted)">View as:</span><div class="seg" id="roleSeg"><button class="active" data-role="organizer">Organizer</button><button data-role="participant">Participant</button></div></div><div class="prof-head"><div class="prof-av" id="profAv" style="cursor:pointer;position:relative" onclick="document.getElementById('avatarInput').click()" title="Change photo">…<span class="pf-av-ld ld"><svg viewBox="0 0 854 854" aria-hidden="true"><path class="ld-ring" d="M616.242 427.599C616.242 322.601 531.346 237.484 426.622 237.484C321.898 237.484 237.003 322.601 237.003 427.599C237.003 532.596 321.898 617.713 426.622 617.713V727C261.698 727 128 592.953 128 427.599C128 262.244 261.698 128.197 426.622 128.197C591.547 128.197 725.245 262.244 725.245 427.599C725.245 592.953 591.547 727 426.622 727V617.713C531.346 617.713 616.242 532.596 616.242 427.599Z"/><circle class="ld-dot" cx="743.415" cy="132.751" r="63.585"/></svg></span><div class="prof-av-edit">✎</div></div>
+<input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="uploadAvatar(this)"><div class="prof-name" id="profName">…</div><div class="prof-handle" id="profHandle"></div><div class="prof-detail" id="profDetail"></div></div><div id="profErr" class="pf-retry" style="display:none">Couldn’t load your profile.<button onclick="loadProfile()">Try again</button></div><div id="profSetupNote" class="setup-note" style="display:none">Add your name and company so everyone knows who you are.</div><div class="sec"><h3>My details</h3><div class="pf"><label for="pfName">Name</label><input id="pfName" maxlength="80" placeholder="e.g. Jinwoo Park"></div><div class="pf"><label for="pfCompany">Company</label><input id="pfCompany" maxlength="80" placeholder="e.g. Acme Health" list="companyList">
 <datalist id="companyList"></datalist></div><div class="pf"><label for="pfTitle">Role</label><input id="pfTitle" maxlength="80" placeholder="e.g. Co-founder &amp; CEO"></div><div class="pf"><label for="pfLocation">Based in</label><input id="pfLocation" maxlength="80" placeholder="e.g. Seoul"></div><div class="pf"><label for="pfLinkedin">LinkedIn</label><input id="pfLinkedin" maxlength="200" placeholder="https://linkedin.com/in/…"></div><div class="pf"><label for="pfBio">One line about you</label><input id="pfBio" maxlength="400" placeholder="What you are building, in one line"></div></div><div class="sec"><h3>🍽️ Dietary needs</h3><p class="pf-help">Shared with the team preparing meals. Leave empty if you eat anything.</p><div class="pf"><label for="pfDiet">Restrictions / allergies</label><input id="pfDiet" maxlength="200" placeholder="e.g. Vegetarian, no shellfish"></div></div><div class="pf-actions"><button class="add-btn" id="pfSave" onclick="saveProfile()">Save</button><span id="pfStatus" class="pf-status"></span></div><div class="sec"><h3>🏨 The stay</h3><div class="row"><span class="l">Location</span><span class="v">MARU SF · San Francisco, CA</span></div><div class="row"><span class="l">Program</span><span class="v">Oct 19 – Nov 1, 2026</span></div></div></div>
 <div class="page" id="page-announcements"><h1 class="page-title">Announcements</h1><p class="page-sub">Latest updates from the program team</p><div id="annList"></div></div>
 <div class="page" id="page-admin"><div class="admin-header"><h1 class="page-title">Admin</h1><span class="badge">ADMIN</span></div>
@@ -688,6 +720,9 @@ var QUOTES={
 13:{q:'The journey of a thousand miles begins with a single step.',a:'Lao Tzu'}
 };
 function quoteHtml(day){var q=QUOTES[day];if(!q)return'';return'<div class="quote"><p>'+q.q+'</p><cite>'+q.a+'</cite></div>'}
+/* Same loader mark as the splash, for states rendered from JS. */
+var LD="<span class=\"ld ld-sm\"><svg viewBox=\"0 0 854 854\" aria-hidden=\"true\"><path class=\"ld-ring\" d=\"M616.242 427.599C616.242 322.601 531.346 237.484 426.622 237.484C321.898 237.484 237.003 322.601 237.003 427.599C237.003 532.596 321.898 617.713 426.622 617.713V727C261.698 727 128 592.953 128 427.599C128 262.244 261.698 128.197 426.622 128.197C591.547 128.197 725.245 262.244 725.245 427.599C725.245 592.953 591.547 727 426.622 727V617.713C531.346 617.713 616.242 532.596 616.242 427.599Z\"/><circle class=\"ld-dot\" cx=\"743.415\" cy=\"132.751\" r=\"63.585\"/></svg></span>";
+function ldText(t){return LD+t}
 var IC={check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>',plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>',pin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>',ann:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5M5 8l7-6 7 6v9H5z"/></svg>',cal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>'};
 /* Fallback schedule - regenerated 2026-09-11 from the Google Sheet with the
    canonical 9-category taxonomy. The portal normally overwrites this with
@@ -867,7 +902,7 @@ function mealSeg(id){var v=meals[id];return'<div class="meal-seg" onclick="event
 function addBtn(id){var a=rsvps[id];return'<button class="add-btn '+(a?'added':'')+'" onclick="event.stopPropagation();tR(\''+id+'\',this)">'+(a?IC.check+'Added':IC.plus+'Add to schedule')+'</button>'}
 function rS(){var el=document.getElementById('scheduleList'),h='',days=selDay===0?S:S.filter(function(d){return d.day===selDay}),n=0;days.forEach(function(d){var rows='';d.events.forEach(function(ev,i){var id=eid(d.day,i);if(mySched&&!rsvps[id])return;n++;var badge='<span class="ec-badge badge-'+ev.cat+'">'+(CATICON[ev.cat]||'')+catL(ev.cat)+'</span>'+(isYC(ev)?'<span class="yc-tag">'+YCLOGO+'YC</span>':'')+attMark(ev);if(viewMode==='agenda'){var a=rsvps[id];rows+='<div class="agenda-row cat-'+ev.cat+(isHK(ev)?' housekeeping':'')+'" onclick="oM('+d.day+','+i+')"><span class="t">'+ev.t.split('–')[0]+'</span><span class="ec-badge badge-'+ev.cat+'" style="margin:0">'+(CATICON[ev.cat]||'')+catL(ev.cat)+'</span><span class="ti">'+ev.title+'</span>'+(isYC(ev)?'<span class="yc-tag" style="margin:0">'+YCLOGO+'</span>':'')+(a?'<span class="ch">'+IC.check+'</span>':'')+'</div>'}else{var fa=fA(d.day,i);var av=fa.shown.map(function(p){return'<div class="ec-avatar">'+ini(p.name)+'</div>'}).join('');var hk=isHK(ev);rows+='<div class="event-card cat-'+ev.cat+(hk?' housekeeping':'')+'" data-k="'+id+'" onclick="oM('+d.day+','+i+')">'+(rsvps[id]?'<div class="added-dot">'+IC.check+'</div>':'')+'<div class="ec-top"><div class="ec-time"><span class="t-range">'+ev.t+'</span>'+sunHtml(ev.t)+'</div><div class="ec-body">'+badge+'<div class="ec-title">'+ev.title+'</div>'+(ev.loc?'<div class="ec-loc">'+IC.pin+ev.loc+'</div>':'')+'</div></div><div class="ec-footer"><div style="display:flex;align-items:center"><div class="ec-avatars">'+av+'</div><span class="ec-going">'+fa.total+' going</span></div><div class="ec-actions">'+(hk?'':((ev.meal?mealSeg(id):'')+addBtn(id)))+'</div></div></div>'}});if(!rows)return;if(selDay===0)h+='<div class="day-header"><b>Day '+d.day+' · '+d.theme+'</b><span>'+d.dow+', Oct '+d.date.split('/')[1]+'</span></div>';h+=rows});
 if(n&&selDay>0&&viewMode==='cards'&&!mySched)h+=checkinHtml(selDay);el.innerHTML=n?h:'<div class="empty"><svg class="logo-wm" viewBox="0 0 854 854" fill="none"><path d="M807 132.751C807 167.96 778.532 196.502 743.415 196.502C708.298 196.502 679.83 167.96 679.83 132.751C679.83 97.5422 708.298 69 743.415 69C778.532 69 807 97.5422 807 132.751Z" fill="#2F2C26"/><path d="M616.242 427.599C616.242 322.601 531.346 237.484 426.622 237.484C321.898 237.484 237.003 322.601 237.003 427.599C237.003 532.596 321.898 617.713 426.622 617.713V727C261.698 727 128 592.953 128 427.599C128 262.244 261.698 128.197 426.622 128.197C591.547 128.197 725.245 262.244 725.245 427.599C725.245 592.953 591.547 727 426.622 727V617.713C531.346 617.713 616.242 532.596 616.242 427.599Z" fill="#2F2C26"/></svg>No events in your schedule yet.<br><small style="display:block;margin-top:6px;font-size:12.5px">Tap “Add to schedule” on any event to save it here.</small></div>'}
-function rP(){var g=document.getElementById('peopleGrid'),f=document.getElementById('peopleFilters');['all','organizer','speaker','vc','participant'].forEach(function(){});var labels={all:'All',organizer:'Organizers',speaker:'Speakers',vc:'VCs',participant:'Participants'};f.innerHTML=['all','organizer','speaker','vc','participant'].map(function(r){return'<button class="chip '+(pFilter===r?'active':'')+'" onclick="pFilter=\''+r+'\';rP()">'+labels[r]+'</button>'}).join('');var list=pFilter==='all'?P:P.filter(function(p){return p.role===pFilter});if(!list.length){g.innerHTML='<div class="empty" style="padding:28px 0">'+(P.length?'No one in this group yet.':'Loading participants…')+'</div>';return}
+function rP(){var g=document.getElementById('peopleGrid'),f=document.getElementById('peopleFilters');['all','organizer','speaker','vc','participant'].forEach(function(){});var labels={all:'All',organizer:'Organizers',speaker:'Speakers',vc:'VCs',participant:'Participants'};f.innerHTML=['all','organizer','speaker','vc','participant'].map(function(r){return'<button class="chip '+(pFilter===r?'active':'')+'" onclick="pFilter=\''+r+'\';rP()">'+labels[r]+'</button>'}).join('');var list=pFilter==='all'?P:P.filter(function(p){return p.role===pFilter});if(!list.length){g.innerHTML='<div class="empty" style="padding:28px 0">'+(P.length?'No one in this group yet.':ldText('Loading participants…'))+'</div>';return}
 g.innerHTML=list.map(function(p){return'<div class="person"><div class="p-av">'+(p.avatar?'<img src="'+p.avatar+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover">':ini(p.name))+'</div><div><div class="p-name">'+p.name+'</div><div class="p-co">'+p.co+'</div><span class="p-tag tag-'+p.role+'">'+p.title+'</span></div></div>'}).join('')}
 function rI(){var el=document.getElementById('infoContent'),q=document.getElementById('infoSearch').value.toLowerCase();el.innerHTML=INFO.map(function(s){var items=s.items.filter(function(i){return!q||i.q.toLowerCase().indexOf(q)>=0||i.a.toLowerCase().indexOf(q)>=0});if(!items.length)return'';return'<div class="info-sec"><h2>'+s.section+'</h2>'+items.map(function(i){return'<div class="acc"><div class="acc-h" onclick="this.parentElement.classList.toggle(\'open\')">'+i.q+IC.plus+'</div><div class="acc-b"><div><p>'+i.a+'</p></div></div></div>'}).join('')+'</div>'}).join('')}
 /* ── Notification panel ── */
@@ -1083,7 +1118,7 @@ async function syncFromSheets(){
 var url=document.getElementById('syncSheetUrl').value.trim();
 if(!url){syncStatus('URL\uc744 \uc785\ub825\ud574\uc8fc\uc138\uc694','error');return;}
 var btn=document.getElementById('syncImportBtn');
-btn.disabled=true;btn.textContent='Importing...';
+btn.disabled=true;btn.innerHTML=LD+'Importing…';
 syncStatus('Fetching and parsing sheet...','');
 try{
 var res=await fetch('/api/admin/parse-schedule',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sheetUrl:url})});
@@ -1178,13 +1213,23 @@ document.getElementById('profHandle').textContent='@'+String(p.email||'').split(
 document.getElementById('profDetail').textContent=[p.title,p.company,p.location].filter(Boolean).join(' \u00b7 ');
 }}
 async function loadProfile(){
+var pg=document.getElementById('page-profile'),err=document.getElementById('profErr');
+if(pg)pg.classList.add('pf-loading');
+if(err)err.style.display='none';
 try{
-var r=await fetch('/api/profile');if(!r.ok)return;
+var r=await fetch('/api/profile');if(!r.ok)throw new Error('HTTP '+r.status);
 var d=await r.json();
 fillProfileForm(d.profile);
 var note=document.getElementById('profSetupNote');
 if(note)note.style.display=d.needsSetup?'block':'none';
-}catch(e){console.log('[Profile] load failed',e)}
+}catch(e){
+console.log('[Profile] load failed',e);
+/* Empty beats fake: say it failed and offer a retry rather than showing
+   blank fields that look like an account with nothing in it. */
+if(err)err.style.display='block';
+}finally{
+if(pg)pg.classList.remove('pf-loading');
+}
 }
 /* ── Avatar upload with client-side resize ── */
 async function uploadAvatar(input){
@@ -1263,6 +1308,9 @@ if(!res.ok){var e=await res.json().catch(function(){return{}});throw new Error(e
 
 /* Never leave the splash up if a request hangs. */
 setTimeout(function(){var sp=document.getElementById('splash');if(sp)sp.classList.add('gone')},6000);
+/* Same for the profile skeleton: if init never reaches loadProfile(), drop it
+   rather than shimmering forever. */
+setTimeout(function(){var pg=document.getElementById('page-profile');if(pg)pg.classList.remove('pf-loading')},8000);
 
 /* ── Load schedule, then RSVPs, on init ── */
 (async function loadRemoteSchedule(){
