@@ -1,4 +1,5 @@
 import { createServerSupabase } from '@/lib/supabase-server';
+import { requireApproved } from '@/lib/access'
 import { NextResponse } from 'next/server';
 
 /**
@@ -7,6 +8,9 @@ import { NextResponse } from 'next/server';
  * Falls back to null if no synced schedule exists (app.html uses hardcoded fallback).
  */
 export async function GET() {
+  const denied = await requireApproved()
+  if (denied) return denied
+
   try {
     const supabase = await createServerSupabase();
 

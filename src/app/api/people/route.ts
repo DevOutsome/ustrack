@@ -1,4 +1,5 @@
 import { createServerSupabase } from '@/lib/supabase-server'
+import { requireApproved } from '@/lib/access'
 import { NextResponse } from 'next/server'
 
 /**
@@ -10,6 +11,9 @@ import { NextResponse } from 'next/server'
  * "Participant A-1", so neither reflected who had actually signed up.
  */
 export async function GET() {
+  const denied = await requireApproved()
+  if (denied) return denied
+
   const supabase = await createServerSupabase()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

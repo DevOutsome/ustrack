@@ -1,4 +1,5 @@
 import { createServerSupabase } from '@/lib/supabase-server'
+import { requireApproved } from '@/lib/access'
 import { NextRequest, NextResponse } from 'next/server'
 
 /**
@@ -36,6 +37,9 @@ const FROM_DB: Record<string, string> = { attending: 'yes', not_attending: 'no' 
  * "who's going" and the admin meal dashboard.
  */
 export async function GET() {
+  const denied = await requireApproved()
+  if (denied) return denied
+
   const supabase = await createServerSupabase()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -102,6 +106,9 @@ export async function GET() {
  * Upserts the caller's own row. RLS guarantees a user can only write their own.
  */
 export async function PUT(request: NextRequest) {
+  const denied = await requireApproved()
+  if (denied) return denied
+
   const supabase = await createServerSupabase()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

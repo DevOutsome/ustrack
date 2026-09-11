@@ -1,4 +1,5 @@
 import { createServerSupabase } from '@/lib/supabase-server'
+import { requireApproved } from '@/lib/access'
 import { NextRequest, NextResponse } from 'next/server'
 
 /**
@@ -23,6 +24,9 @@ const personName = (u: Named[] | Named | null | undefined): string => {
 }
 
 export async function GET() {
+  const denied = await requireApproved()
+  if (denied) return denied
+
   const supabase = await createServerSupabase()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -68,6 +72,9 @@ export async function GET() {
  * a new row so nothing overwrites a previous report.
  */
 export async function POST(request: NextRequest) {
+  const denied = await requireApproved()
+  if (denied) return denied
+
   const supabase = await createServerSupabase()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
