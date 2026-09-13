@@ -111,6 +111,11 @@ transition:width .42s var(--ease),right .42s var(--ease),padding .42s var(--ease
 .cr-days{display:flex;gap:2px;margin-top:10px}
 .cr-day{width:12px;height:12px;border-radius:3.5px;background:var(--bg2);flex-shrink:0;position:relative}
 .cr-day[data-tip]:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 5px);left:50%;transform:translateX(-50%);font-size:9px;font-weight:600;white-space:nowrap;background:var(--text);color:#fff;padding:3px 7px;border-radius:5px;pointer-events:none;z-index:10}
+.cr-noanim,.cr-noanim *{transition:none!important}
+.cr-note{display:none}
+.cr.open .cr-note{display:block;margin-top:11px;padding-top:9px;border-top:1px solid rgba(232,225,214,.85);font-size:9.5px;line-height:1.5;color:var(--muted);letter-spacing:-.05px}
+.cr-note b{color:var(--text2);font-weight:700}
+.cr.done .cr-note{border-top-color:rgba(200,230,201,.75)}
 .cr.done{border-color:rgba(200,230,201,.9);background:linear-gradient(150deg,rgba(241,248,233,.82),rgba(232,245,233,.82))}
 .cr.done .cr-title{color:#2E7D32}
 .cr-close{display:none;position:absolute;top:8px;right:9px;background:none;border:none;color:var(--muted);font-size:13px;line-height:1;cursor:pointer;padding:3px;border-radius:6px;transition:background .2s,color .2s}
@@ -1025,11 +1030,21 @@ h+='</div>'}
 panel.innerHTML=h}
 
 /* ── Attendance helpers ── */
+/* What counts toward the 70% program credit. One predicate, so the widget, the
+   People badges and the admin dashboard can never drift apart.
+   Meals (the sheet's Is Meal? column) and workouts are deliberately out: sitting
+   down to dinner is not the thing being certified. */
+function isRequired(ev){
+if(ev.att!=='Strongly Recommended')return false;
+var c=ev.cat||'';
+if({move:1,logistics:1,exercise:1}[c])return false;
+if(ev.meal)return false;
+return true}
+
 function getSRKeys(){
 var keys=[];
 S.forEach(function(d){d.events.forEach(function(ev,i){
-if(ev.att!=='Strongly Recommended')return;
-if({move:1,logistics:1}[ev.cat||''])return;
+if(!isRequired(ev))return;
 keys.push(eid(d.day,i))
 })});
 return keys}
@@ -1055,9 +1070,7 @@ var total=0,done=0,dayStats=[];
 S.forEach(function(d){
 var dt=0,dd=0;
 d.events.forEach(function(ev,i){
-if(ev.att!=='Strongly Recommended')return;
-var cat=ev.cat||'';
-if({move:1,logistics:1}[cat])return;
+if(!isRequired(ev))return;
 total++;dt++;
 var id=eid(d.day,i);
 if(rsvps[id]){done++;dd++}
@@ -1088,7 +1101,8 @@ el.innerHTML='<button class="cr-close" onclick="event.stopPropagation();toggleCR
 +'<div class="cr-label">'+(hit?'Done':'Goal')+'</div>'
 +'<div class="cr-body"><div class="cr-title">'+(hit?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;vertical-align:-2px;margin-right:3px;color:#2E7D32"><path d="M20 6L9 17l-5-5"/></svg>Program Complete':'Attendance')+'</div>'
 +'<div class="cr-sub">'+(hit?'<b>'+done+'</b>/'+total+' required sessions<br>you\'re all set \u2705':'<b>'+done+'</b>/'+total+' required<br><b>'+need+' more</b> to hit 70%')+'</div>'
-+'<div class="cr-days">'+dots+'</div></div>'}
++'<div class="cr-days">'+dots+'</div>'
++'<div class="cr-note">Program credit needs <b>70%</b> of required sessions. Meals and workouts are not counted.</div></div>'}
 
 /* Widget expand/collapse. Collapsed by default so it stays a small dot on the
    side; clicking the ring opens the detail. */
@@ -1097,7 +1111,7 @@ var el=document.getElementById('completionRing');if(!el)return;
 var open=force===undefined?!el.classList.contains('open'):force;
 el.classList.toggle('open',open);
 el.title=open?'':'Attendance \u00b7 click for detail';
-_ls.s('cr_open',open?'1':'')}
+_ls.s('cr_collapsed',open?'':'1')}
 
 function checkNotifDot(){
 /* Show the red dot if there are participants (program is upcoming) or new members */
@@ -1575,7 +1589,13 @@ await loadProfile();
 await loadFeedback();
 checkNotifDot();
 rCR();
-if(_ls.g('cr_open'))toggleCR(true);
+/* Expanded unless the participant collapsed it themselves - the number means
+   nothing if you have to click to find out what it is. Opened without the
+   transition so it is simply already there on load. */
+if(!_ls.g('cr_collapsed')){
+var _cr=document.getElementById('completionRing');
+if(_cr){_cr.classList.add('cr-noanim');toggleCR(true);
+requestAnimationFrame(function(){requestAnimationFrame(function(){_cr.classList.remove('cr-noanim')})})}}
 /* Everything the first paint depends on is here. Drop the splash. */
 var sp=document.getElementById('splash');if(sp)sp.classList.add('gone');
 /* Company autocomplete from existing participants */
