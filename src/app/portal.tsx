@@ -78,7 +78,7 @@ export default function Portal({ role, email, superAdmin }: { role: string; emai
     section.innerHTML = `
 <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
   <h2 style="font-size:20px;font-weight:800;letter-spacing:-.5px">All Users</h2>
-  <span style="background:#2F2C26;color:#fff;font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;letter-spacing:.8px">ADMIN</span>
+  <span style="background:#2F2C26;color:#fff;font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;letter-spacing:.8px">${superAdmin ? 'SUPER ADMIN' : 'ADMIN'}</span>
 </div>
 <p style="font-size:12px;color:#857F76;margin-bottom:4px">New signups wait here until you let them in. Admin grants organizer access.</p>
 <div id="ml"><div style="color:#857F76;font-size:13px;padding:10px 0">Loading…</div></div>`

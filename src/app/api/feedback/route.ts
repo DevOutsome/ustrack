@@ -1,5 +1,5 @@
 import { createServerSupabase } from '@/lib/supabase-server'
-import { requireApproved } from '@/lib/access'
+import { requireApproved, getAccess } from '@/lib/access'
 import { NextRequest, NextResponse } from 'next/server'
 
 /**
@@ -128,4 +128,41 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Nothing to submit' }, { status: 400 })
   }
   return NextResponse.json({ ok: true, ...result })
+}
+
+/**
+ * PATCH /api/feedback
+ * Body: { id, status }
+ *
+ * Organiser-only: close out an issue from Admin > Today. The issues RLS policy
+ * already allows an organiser to update any row (issues_update_own_or_organizer),
+ * so this needs no SECURITY DEFINER helper.
+ */
+export async function PATCH(request: NextRequest) {
+  const access = await getAccess()
+  if (!access) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (access.role !== 'organizer')
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+
+  let body: { id?: string; status?: string }
+  try { body = await request.json() } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }) }
+
+  if (!body.id) return NextResponse.json({ error: 'id required' }, { status: 400 })
+  if (!ISSUE_STATUSES.includes(body.status ?? '')) {
+    return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
+  }
+
+  const supabase = await createServerSupabase()
+  const { data, error } = await supabase
+    .from('issues')
+    .update({ status: body.status })
+    .eq('id', body.id)
+    .select('id')
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  // An update that matched nothing is not a success.
+  if (!data || data.length === 0) {
+    return NextResponse.json({ error: 'No such issue' }, { status: 404 })
+  }
+  return NextResponse.json({ ok: true })
 }

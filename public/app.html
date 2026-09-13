@@ -112,6 +112,14 @@ transition:width .42s var(--ease),right .42s var(--ease),padding .42s var(--ease
 .cr-day{width:12px;height:12px;border-radius:3.5px;background:var(--bg2);flex-shrink:0;position:relative}
 .cr-day[data-tip]:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 5px);left:50%;transform:translateX(-50%);font-size:9px;font-weight:600;white-space:nowrap;background:var(--text);color:#fff;padding:3px 7px;border-radius:5px;pointer-events:none;z-index:10}
 .cr-noanim,.cr-noanim *{transition:none!important}
+/* Session expired. A silent bounce to /login mid-tap reads as the app breaking,
+   so say what happened and let them choose when to sign in again. */
+.sx{position:fixed;inset:0;z-index:10000;background:rgba(47,44,38,.45);backdrop-filter:blur(3px);display:none;place-items:center;padding:24px}
+.sx.open{display:grid}
+.sx-card{background:#fff;border-radius:18px;padding:26px 24px;max-width:340px;width:100%;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.22)}
+.sx-card h3{font-size:16px;font-weight:800;letter-spacing:-.3px;margin-bottom:7px}
+.sx-card p{font-size:13px;color:var(--muted);line-height:1.55;margin-bottom:18px}
+.sx-btn{width:100%;padding:13px;border-radius:12px;border:none;background:var(--text);color:#fff;font-size:14px;font-weight:700;cursor:pointer}
 .cr-feed{display:none}
 .cr.open .cr-feed{display:block;margin-top:11px;padding-top:10px;border-top:1px solid rgba(232,225,214,.85)}
 .cr.done .cr-feed{border-top-color:rgba(200,230,201,.75)}
@@ -711,9 +719,10 @@ h1.page-title{font-size:24px;letter-spacing:-.6px}
 <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="uploadAvatar(this)"><div class="prof-name" id="profName">…</div><div class="prof-handle" id="profHandle"></div><div class="prof-detail" id="profDetail"></div></div><div id="profErr" class="pf-retry" style="display:none">Couldn’t load your profile.<button onclick="loadProfile()">Try again</button></div><div id="profSetupNote" class="setup-note" style="display:none">Add your name and company so everyone knows who you are.</div><div class="sec"><h3>My details</h3><div class="pf"><label for="pfName">Name</label><input id="pfName" maxlength="80" placeholder="e.g. Jinwoo Park"></div><div class="pf"><label for="pfCompany">Company</label><input id="pfCompany" maxlength="80" placeholder="e.g. Acme Health" list="companyList">
 <datalist id="companyList"></datalist></div><div class="pf"><label for="pfTitle">Role</label><input id="pfTitle" maxlength="80" placeholder="e.g. Co-founder &amp; CEO"></div><div class="pf"><label for="pfLocation">Based in</label><input id="pfLocation" maxlength="80" placeholder="e.g. Seoul"></div><div class="pf"><label for="pfLinkedin">LinkedIn</label><input id="pfLinkedin" maxlength="200" placeholder="https://linkedin.com/in/…"></div><div class="pf"><label for="pfBio">One line about you</label><input id="pfBio" maxlength="400" placeholder="What you are building, in one line"></div></div><div class="sec"><h3>🍽️ Dietary needs</h3><p class="pf-help">Shared with the team preparing meals. Leave empty if you eat anything.</p><div class="pf"><label for="pfDiet">Restrictions / allergies</label><input id="pfDiet" maxlength="200" placeholder="e.g. Vegetarian, no shellfish"></div></div><div class="pf-actions"><button class="add-btn" id="pfSave" onclick="saveProfile()">Save</button><span id="pfStatus" class="pf-status"></span></div><div class="sec"><h3>🏨 The stay</h3><div class="row"><span class="l">Location</span><span class="v">MARU SF · San Francisco, CA</span></div><div class="row"><span class="l">Program</span><span class="v">Oct 19 – Nov 1, 2026</span></div></div></div>
 <div class="page" id="page-announcements"><h1 class="page-title">Announcements</h1><p class="page-sub">Latest updates from the program team</p><div id="annList"></div></div>
-<div class="page" id="page-admin"><div class="admin-header"><h1 class="page-title">Admin</h1><span class="badge">ADMIN</span></div>
-<div class="admin-tabs"><button class="admin-tab-btn active" data-atab="meals" onclick="switchAdminTab('meals')">Meal Dashboard</button><button class="admin-tab-btn" data-atab="sync" onclick="switchAdminTab('sync')">Schedule Sync</button><button class="admin-tab-btn" data-atab="attendance" onclick="switchAdminTab('attendance')">Attendance</button><button class="admin-tab-btn" data-atab="announce" onclick="switchAdminTab('announce')">Announcements</button><button class="admin-tab-btn" data-atab="tools" onclick="switchAdminTab('tools')">Tools</button></div>
-<div id="adminTabMeals"><p class="page-sub">식수 현황 · Bernice용</p><div class="date-nav" style="margin-bottom:20px"><button class="date-arrow" id="admPrev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><div class="day-title" id="admTitle" style="text-align:center;flex:1"></div><button class="date-arrow" id="admNext"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button></div><div id="adminContent"></div></div>
+<div class="page" id="page-admin"><div class="admin-header"><h1 class="page-title">Admin</h1><span class="badge" id="adminTierBadge">ADMIN</span></div>
+<div class="admin-tabs"><button class="admin-tab-btn active" data-atab="today" onclick="switchAdminTab('today')">Today</button><button class="admin-tab-btn" data-atab="meals" onclick="switchAdminTab('meals')">Meal Dashboard</button><button class="admin-tab-btn" data-atab="sync" onclick="switchAdminTab('sync')">Schedule Sync</button><button class="admin-tab-btn" data-atab="attendance" onclick="switchAdminTab('attendance')">Attendance</button><button class="admin-tab-btn" data-atab="announce" onclick="switchAdminTab('announce')">Announcements</button><button class="admin-tab-btn" data-atab="tools" onclick="switchAdminTab('tools')">Tools</button></div>
+<div id="adminTabToday"></div>
+<div id="adminTabMeals" style="display:none"><p class="page-sub">식수 현황 · Bernice용</p><div class="date-nav" style="margin-bottom:20px"><button class="date-arrow" id="admPrev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><div class="day-title" id="admTitle" style="text-align:center;flex:1"></div><button class="date-arrow" id="admNext"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button></div><div id="adminContent"></div></div>
 <div id="adminTabSync" style="display:none">
 <div class="sync-section">
 <h3><svg class="sync-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/><path d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14"/></svg>Schedule Sync</h3>
@@ -750,6 +759,7 @@ h1.page-title{font-size:24px;letter-spacing:-.6px}
 <div class="sync-status" id="resetStatus"></div>
 </div>
 </div></div>
+<div class="sx" id="sessionExpired"><div class="sx-card"><h3>Session expired</h3><p>You have been signed out for security. Your schedule and RSVPs are saved.</p><button class="sx-btn" onclick="location.href='/login'">Sign in again</button></div></div>
 <div class="modal-overlay" id="eventModal"><div class="modal"><div class="modal-handle"></div><div id="modalContent"></div></div></div>
 <footer class="footer"><a href="https://outsome.co" target="_blank" rel="noopener"><svg class="footer-logo" viewBox="0 0 3140 519" fill="none" aria-label="Outsome"><path d="M232.608 519C186.449 519 145.736 508.625 110.469 487.876C75.7207 467.126 48.4924 438.595 28.7843 402.283C9.59475 365.971 0 324.732 0 278.564C0 238.621 6.74226 201.79 20.2268 168.072C33.7113 134.354 52.3822 105.045 76.2394 80.1454C100.615 54.7271 128.881 35.015 161.036 21.009C193.71 7.003 228.459 0 265.282 0C311.44 0 351.894 10.3748 386.643 31.1245C421.91 51.8741 449.138 80.4048 468.328 116.717C488.036 152.51 497.89 193.75 497.89 240.436C497.89 279.342 491.407 315.654 478.441 349.372C465.475 383.09 446.804 412.658 422.428 438.076C398.571 463.495 370.565 483.466 338.41 497.991C306.254 511.997 270.987 519 232.608 519ZM254.391 462.198C281.878 462.198 305.735 454.157 325.962 438.076C346.189 421.995 361.748 399.43 372.639 370.381C384.049 340.813 389.754 307.094 389.754 269.226C389.754 203.865 376.529 152.25 350.079 114.382C324.147 75.9955 288.621 56.8021 243.499 56.8021C217.567 56.8021 194.229 64.8426 173.483 80.9236C152.738 96.4858 136.401 118.792 124.472 147.841C113.062 176.372 107.357 210.349 107.357 249.774C107.357 315.135 120.583 367.009 147.033 405.396C173.483 443.264 209.269 462.198 254.391 462.198Z" fill="#2F2C26"/><path d="M686.776 519C657.733 519 635.431 509.403 619.872 490.21C604.313 470.498 596.534 440.151 596.534 399.171V209.312L611.315 220.984L560.748 210.09C557.118 209.052 554.006 205.421 551.413 199.196C549.338 192.453 548.301 183.115 548.301 171.184C572.677 168.072 591.866 165.738 605.869 164.181C619.872 162.106 631.282 161.069 640.099 161.069C658.77 161.069 672.514 164.96 681.331 172.741C690.666 180.522 695.334 192.712 695.334 209.312V388.277C695.334 410.583 699.742 427.183 708.559 438.076C717.376 448.451 730.601 453.639 748.235 453.639C761.2 453.639 773.129 451.304 784.02 446.636C795.43 441.448 805.284 435.223 813.583 427.961C821.881 420.18 828.623 412.918 833.809 406.174L823.696 425.627V209.312L838.477 220.984L787.132 210.09C783.502 209.052 780.649 205.421 778.575 199.196C776.5 192.453 775.463 183.115 775.463 171.184C799.839 168.072 819.028 165.738 833.031 164.181C847.035 162.106 858.185 161.069 866.483 161.069C885.673 161.069 899.676 164.96 908.493 172.741C917.31 180.522 921.718 192.712 921.718 209.312V436.52C921.718 445.858 923.533 452.861 927.164 457.529C931.313 461.679 937.018 463.754 944.279 463.754C949.465 463.754 954.911 462.717 960.616 460.642C966.321 458.567 971.248 455.973 975.397 452.861L983.954 483.207C972.544 494.1 958.541 502.919 941.945 509.663C925.867 515.888 910.308 519 895.268 519C875.56 519 859.741 513.294 847.813 501.882C835.884 489.95 829.92 473.87 829.92 453.639H824.474C781.427 497.213 735.528 519 686.776 519Z" fill="#2F2C26"/><path d="M1156.36 519C1126.28 519 1103.98 509.403 1089.45 490.21C1075.45 471.016 1068.45 443.783 1068.45 408.508V100.376C1075.71 95.1889 1084.79 90.2609 1095.68 85.5922C1106.57 80.9235 1118.24 77.033 1130.69 73.9206C1143.13 70.2894 1155.06 67.955 1166.47 66.9176V394.502C1166.47 414.214 1169.58 428.998 1175.81 438.855C1182.55 448.192 1193.7 452.861 1209.26 452.861C1219.11 452.861 1229.74 451.045 1241.15 447.414C1252.56 443.264 1263.97 437.039 1275.38 428.739L1290.17 456.751C1283.42 466.607 1273.05 476.463 1259.05 486.319C1245.04 495.657 1229.23 503.438 1211.59 509.663C1193.96 515.888 1175.55 519 1156.36 519ZM1250.49 217.871L1017.88 211.646C1017.88 201.79 1018.92 192.453 1020.99 183.634C1023.59 174.297 1026.96 168.072 1031.11 164.96L1268.38 153.288C1269.94 156.4 1270.98 159.513 1271.5 162.625C1272.01 165.738 1272.27 168.85 1272.27 171.963C1272.27 183.894 1270.46 194.009 1266.83 202.309C1263.2 210.09 1257.75 215.277 1250.49 217.871Z" fill="#2F2C26"/><path d="M1453.12 519C1410.6 519 1375.85 510.96 1348.88 494.879C1322.43 478.798 1309.2 458.826 1309.2 434.964C1309.2 421.477 1313.35 411.102 1321.65 403.84C1330.47 396.058 1341.62 392.168 1355.1 392.168C1371.18 392.168 1384.41 396.577 1394.78 405.396C1394.78 432.37 1399.96 452.342 1410.34 465.31C1421.23 478.279 1437.57 484.763 1459.35 484.763C1478.02 484.763 1492.8 480.354 1503.69 471.535C1514.58 462.198 1520.03 449.748 1520.03 434.186C1520.03 421.217 1516.14 410.843 1508.36 403.061C1500.58 394.762 1490.47 388.018 1478.02 382.831C1466.09 377.124 1452.87 371.678 1438.34 366.49C1420.71 360.265 1403.08 353.003 1385.44 344.703C1368.33 335.885 1353.81 324.472 1341.88 310.466C1330.47 295.942 1324.76 277.526 1324.76 255.22C1324.76 223.058 1337.73 197.64 1363.66 178.966C1389.59 159.772 1425.12 150.175 1470.24 150.175C1495.65 150.175 1517.95 153.288 1537.14 159.513C1556.85 165.219 1572.15 173.519 1583.04 184.412C1594.45 195.306 1600.16 207.756 1600.16 221.762C1600.16 234.211 1595.75 244.067 1586.93 251.33C1578.63 258.592 1567.74 262.223 1554.26 262.223C1541.29 262.223 1530.14 258.073 1520.81 249.774C1520.81 229.024 1515.62 212.943 1505.25 201.531C1494.87 190.118 1480.09 184.412 1460.9 184.412C1445.35 184.412 1432.9 188.043 1423.56 195.306C1414.75 202.568 1410.34 212.424 1410.34 224.874C1410.34 236.286 1413.97 245.883 1421.23 253.664C1428.49 260.927 1438.08 267.151 1450.01 272.339C1462.46 277.008 1475.43 281.936 1488.91 287.123C1508.1 293.867 1527.03 301.648 1545.7 310.466C1564.89 319.285 1580.71 330.957 1593.16 345.481C1605.6 360.006 1611.83 379.459 1611.83 403.84C1611.83 427.702 1605.34 448.192 1592.38 465.31C1579.41 482.429 1561 495.657 1537.14 504.994C1513.29 514.331 1485.28 519 1453.12 519Z" fill="#2F2C26"/><path d="M1835.99 519C1783.09 519 1741.34 504.216 1710.74 474.648C1680.66 444.561 1665.62 403.84 1665.62 352.484C1665.62 313.06 1674.18 278.304 1691.3 248.217C1708.93 217.612 1732.79 193.75 1762.87 176.631C1793.47 158.994 1828.73 150.175 1868.67 150.175C1903.94 150.175 1934.54 157.178 1960.47 171.184C1986.4 184.672 2006.37 204.124 2020.37 229.543C2034.89 254.961 2042.15 284.789 2042.15 319.025C2042.15 357.931 2033.34 392.427 2015.7 422.514C1998.59 452.601 1974.47 476.204 1943.35 493.322C1912.23 510.441 1876.45 519 1835.99 519ZM1853.89 482.429C1880.86 482.429 1901.6 469.979 1916.12 445.079C1931.16 419.661 1938.68 383.868 1938.68 337.7C1938.68 289.976 1931.16 252.886 1916.12 226.43C1901.6 199.975 1880.86 186.747 1853.89 186.747C1826.92 186.747 1806.17 199.456 1791.65 224.874C1777.13 249.774 1769.87 285.826 1769.87 333.031C1769.87 381.274 1776.87 418.364 1790.87 444.301C1805.4 469.72 1826.4 482.429 1853.89 482.429Z" fill="#2F2C26"/><path d="M2101.16 509.663C2101.16 485.801 2105.31 472.573 2113.61 469.979L2157.95 452.082L2149.4 463.754V207.756L2158.73 219.427L2112.83 207.756C2105.05 205.681 2101.16 192.972 2101.16 169.628C2125.54 165.478 2144.47 162.625 2157.95 161.069C2171.96 159.513 2183.63 158.735 2192.96 158.735C2210.6 158.735 2223.04 162.625 2230.3 170.406C2238.08 178.187 2241.97 190.637 2241.97 207.756V226.43L2238.86 224.096H2247.42C2269.72 201.271 2293.58 183.375 2318.99 170.406C2344.92 156.919 2369.56 150.175 2392.9 150.175C2421.94 150.175 2443.2 160.291 2456.69 180.522C2470.17 200.753 2476.91 231.358 2476.91 272.339V466.088L2467.58 455.195L2515.81 466.867C2515.81 476.723 2514.78 484.763 2512.7 490.988C2510.63 496.694 2507 502.919 2501.81 509.663H2340.77C2340.77 485.801 2344.92 472.573 2353.22 469.979L2387.45 457.529L2378.89 469.201V283.232C2378.89 239.139 2363.59 217.093 2332.99 217.093C2320.55 217.093 2308.36 219.946 2296.43 225.652C2284.5 230.84 2273.87 237.324 2264.53 245.105C2255.72 252.886 2248.72 260.408 2243.53 267.67L2247.42 254.442V466.088L2238.08 455.195L2286.32 466.867C2286.32 476.723 2285.28 484.763 2283.2 490.988C2281.13 496.694 2277.24 502.919 2271.54 509.663H2101.16ZM2570.27 509.663C2570.27 485.801 2574.42 472.573 2582.72 469.979L2616.95 457.529L2608.39 469.201V283.232C2608.39 239.139 2593.09 217.093 2562.49 217.093C2544.86 217.093 2528 222.28 2511.92 232.655C2496.36 243.03 2483.92 254.183 2474.58 266.114L2463.69 224.096H2476.14C2498.44 201.271 2522.55 183.375 2548.49 170.406C2574.42 156.919 2598.79 150.175 2621.61 150.175C2651.18 150.175 2672.7 160.291 2686.18 180.522C2699.67 200.753 2706.41 231.099 2706.41 271.561V461.42L2697.85 450.526L2754.64 466.867C2754.64 476.723 2753.61 484.763 2751.53 490.988C2749.98 496.694 2746.35 502.919 2740.64 509.663H2570.27Z" fill="#2F2C26"/><path d="M2975.07 519C2940.84 519 2910.76 511.738 2884.83 497.213C2858.9 482.688 2838.67 462.457 2824.15 436.52C2810.15 410.583 2803.15 380.496 2803.15 346.259C2803.15 308.91 2811.44 275.451 2828.04 245.883C2844.64 216.315 2866.94 192.971 2894.94 175.853C2923.47 158.735 2955.11 150.175 2989.85 150.175C3019.94 150.175 3046.13 156.66 3068.43 169.628C3090.73 182.078 3107.84 199.715 3119.77 222.54C3132.22 244.846 3138.44 271.301 3138.44 301.907C3138.44 314.876 3136.63 323.435 3133 327.585C3129.37 331.216 3123.66 333.031 3115.88 333.031H2873.16V296.46L3056.76 291.792L3048.2 303.463C3048.72 278.564 3046.39 257.555 3041.2 240.436C3036.01 222.799 3028.49 209.571 3018.64 200.753C3008.79 191.415 2996.86 186.747 2982.85 186.747C2961.07 186.747 2943.18 198.418 2929.17 221.762C2915.17 244.586 2908.17 276.489 2908.17 317.469C2908.17 348.075 2912.58 374.531 2921.4 396.837C2930.21 419.142 2943.18 436.261 2960.29 448.192C2977.41 459.604 2998.41 465.31 3023.31 465.31C3042.5 465.31 3060.65 461.16 3077.76 452.861C3094.88 444.561 3111.47 432.63 3127.55 417.067L3140 445.079C3128.07 459.604 3113.29 472.573 3095.66 483.985C3078.02 494.879 3058.83 503.438 3038.09 509.663C3017.86 515.888 2996.86 519 2975.07 519Z" fill="#2F2C26"/></svg></a><p>Made for founders. Built with intention.</p></footer>
 
@@ -1039,6 +1049,20 @@ ANN.forEach(function(a){h+='<div class="notif-ann"><b>'+esc(a.title)+'</b> \u00b
 h+='</div>'}
 panel.innerHTML=h}
 
+/* A 401 from any data route means the session is gone. Show it once, and stop
+   letting callers carry on as if they simply had no data. */
+var _sxShown=false;
+function sessionGone(){
+if(_sxShown)return;
+_sxShown=true;
+var el=document.getElementById('sessionExpired');
+if(el)el.classList.add('open');
+var sp=document.getElementById('splash');if(sp)sp.classList.add('gone')}
+
+function checkAuth(res){
+if(res&&res.status===401){sessionGone();return false}
+return true}
+
 /* ── Attendance helpers ── */
 /* What counts toward the 70% program credit. One predicate, so the widget, the
    People badges and the admin dashboard can never drift apart.
@@ -1185,7 +1209,7 @@ var npsD={};
 var npsDone={},serverNPS=[],serverIssues=[];
 async function loadFeedback(){
 try{
-var r=await fetch('/api/feedback');if(!r.ok)return;
+var r=await fetch('/api/feedback');if(!checkAuth(r))return;if(!r.ok)return;
 var d=await r.json();
 npsDone=d.myDays||{};serverNPS=d.nps||[];serverIssues=d.issues||[];
 if(document.getElementById('scheduleList'))rS();
@@ -1304,7 +1328,7 @@ document.getElementById('admNext').addEventListener('click',function(){if(admDay
 document.addEventListener('keydown',function(e){if(e.key==='Escape')cM()});
 function setRole(r,isSuper){curRole=r;if(isSuper!==undefined)isSuperAdmin=!!isSuper;document.getElementById('adminTab').style.display=r==='organizer'?'':'none';/* Tools holds Reset Test Data - super admin only, so a normal admin never
    sees a button that wipes everyone's RSVPs. */
-var tb=document.querySelector('.admin-tab-btn[data-atab="tools"]');if(tb)tb.style.display=isSuperAdmin?'':'none';var tp=document.getElementById('adminTabTools');if(tp&&!isSuperAdmin)tp.style.display='none';var tba=document.getElementById('tabbarAdmin');if(tba)tba.style.display=r==='organizer'?'':'none';document.querySelectorAll('#roleSeg button').forEach(function(b){b.classList.toggle('active',b.dataset.role===r)});/* The profile header is owned by loadProfile() - it renders the signed-in
+var atb=document.getElementById('adminTierBadge');if(atb)atb.textContent=isSuperAdmin?'SUPER ADMIN':'ADMIN';var tb=document.querySelector('.admin-tab-btn[data-atab="tools"]');if(tb)tb.style.display=isSuperAdmin?'':'none';var tp=document.getElementById('adminTabTools');if(tp&&!isSuperAdmin)tp.style.display='none';var tba=document.getElementById('tabbarAdmin');if(tba)tba.style.display=r==='organizer'?'':'none';document.querySelectorAll('#roleSeg button').forEach(function(b){b.classList.toggle('active',b.dataset.role===r)});/* The profile header is owned by loadProfile() - it renders the signed-in
    user's own row from /api/profile. setRole only governs admin visibility. */
 if(r!=='organizer'&&document.getElementById('page-admin').classList.contains('active'))sP('schedule')}
 document.getElementById('roleSeg').addEventListener('click',function(e){var b=e.target.closest('button');if(b)setRole(b.dataset.role)});
@@ -1313,11 +1337,12 @@ setRole('organizer');
 /* ── Admin tab switching ── */
 function switchAdminTab(tab){
 document.querySelectorAll('.admin-tab-btn').forEach(function(b){b.classList.toggle('active',b.dataset.atab===tab)});
-document.getElementById('adminTabMeals').style.display=tab==='meals'?'':'none';
+document.getElementById('adminTabToday').style.display=tab==='today'?'':'none';document.getElementById('adminTabMeals').style.display=tab==='meals'?'':'none';
 document.getElementById('adminTabSync').style.display=tab==='sync'?'':'none';
 document.getElementById('adminTabAttendance').style.display=tab==='attendance'?'':'none';
 document.getElementById('adminTabAnnounce').style.display=tab==='announce'?'':'none';
 document.getElementById('adminTabTools').style.display=tab==='tools'?'':'none';
+if(tab==='today')rToday();
 if(tab==='meals')rAdmin();
 if(tab==='sync')loadSyncMeta();
 if(tab==='tools'&&!isSuperAdmin)return;
@@ -1352,6 +1377,70 @@ var list=document.getElementById('annAdminList');
 if(!list)return;
 if(!ANN.length){list.innerHTML='<div style="color:var(--muted);font-size:12.5px;padding:8px 0">No announcements yet.</div>';return}
 list.innerHTML=ANN.map(function(a){return'<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 14px;background:#fff;border:1px solid var(--border);border-radius:10px;margin-bottom:8px"><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700">'+esc(a.title)+'</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px">'+esc(a.date)+'</div>'+(a.body?'<div style="font-size:12px;color:var(--text2);margin-top:4px;white-space:pre-wrap">'+esc(a.body)+'</div>':'')+'</div>'+(a.id?'<button onclick="deleteAnnouncement(\''+a.id+'\')" style="flex-shrink:0;background:none;border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:11px;color:var(--muted);cursor:pointer" title="Delete">✕</button>':'')+'</div>'}).join('')}
+
+/* ── Admin > Today ──
+   One screen for running the day: what is on, who is coming to each session,
+   what people cannot eat, and what is still broken. Everything here is read
+   from the same state the participant screens use - no separate source. */
+function rToday(){
+var el=document.getElementById('adminTabToday');if(!el)return;
+var day=todayDay();
+if(!day){el.innerHTML='<div style="color:var(--muted);font-size:13px;padding:12px 0">No program day matches today.</div>';return}
+
+/* Sessions, in order, with who has added each one. */
+var rows='';
+day.events.forEach(function(ev,i){
+if(isHK(ev))return;
+var key=eid(day.day,i);
+var c=rsvpCounts[key]||{going:0,people:[],yes:0,no:0,yesPeople:[]};
+var who=(ev.meal?c.yesPeople:c.people)||[];
+var chips=who.slice(0,6).map(function(p){
+return'<span style="display:inline-flex;align-items:center;gap:4px;background:#F7F5F0;border-radius:7px;padding:2px 7px 2px 3px;font-size:10.5px;font-weight:600;margin:2px 3px 0 0"><span style="width:16px;height:16px;border-radius:5px;background:#E9E4DA;display:grid;place-items:center;font-size:7.5px;font-weight:700">'+esc(ini(p.name))+'</span>'+esc(p.name.split(' ')[0])+'</span>'}).join('');
+var more=who.length>6?'<span style="font-size:10px;color:var(--muted);margin-left:3px">+'+(who.length-6)+'</span>':'';
+var count=ev.meal?c.yes:c.going;
+var req=ev.att==='Strongly Recommended';
+rows+='<div style="padding:10px 0;border-bottom:1px solid #F5F2EC">'
++'<div style="display:flex;align-items:baseline;gap:9px">'
++'<div style="font-size:11px;font-weight:700;color:var(--muted);min-width:42px">'+esc(ev.t.split('\u2013')[0])+'</div>'
++'<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;letter-spacing:-.2px">'+esc(ev.title)+(req?'<span style="font-size:9px;font-weight:700;color:var(--muted);margin-left:6px">REQUIRED</span>':'')+'</div>'
++(ev.loc?'<div style="font-size:11px;color:var(--muted);margin-top:1px">'+esc(ev.loc)+'</div>':'')+'</div>'
++'<div style="font-size:12px;font-weight:800;flex-shrink:0">'+count+'</div></div>'
++(chips?'<div style="margin-top:4px;margin-left:51px">'+chips+more+'</div>':'')
++'</div>'});
+
+/* Dietary needs - for whoever is ordering the food. */
+var diets=P.filter(function(p){return p.diet&&p.diet.trim()});
+var dietHtml=diets.length
+?diets.map(function(p){return'<div style="display:flex;gap:8px;padding:5px 0;font-size:12px"><b style="min-width:90px">'+esc(p.name)+'</b><span style="color:var(--text2)">'+esc(p.diet)+'</span></div>'}).join('')
+:'<div style="font-size:12px;color:var(--muted)">No dietary notes yet.</div>';
+
+/* Open issues across the whole program, newest first. */
+var open=serverIssues.filter(function(x){return x.status==='open'});
+var issueHtml=open.length
+?open.slice(0,8).map(function(x){
+return'<div style="display:flex;align-items:flex-start;gap:9px;padding:7px 0;border-bottom:1px solid #F5F2EC">'
++'<span style="font-size:9.5px;font-weight:700;background:#FDECEA;color:#C62828;padding:2px 7px;border-radius:5px;flex-shrink:0;margin-top:1px">'+esc(x.cat||'Other')+'</span>'
++'<div style="flex:1;min-width:0"><div style="font-size:12.5px;font-weight:600">'+esc(x.text)+'</div>'
++'<div style="font-size:10.5px;color:var(--muted);margin-top:2px">'+esc(x.from)+' \u00b7 Day '+x.day+'</div></div>'
++'<button onclick="resolveIssue(\''+x.id+'\')" style="flex-shrink:0;font-size:10.5px;font-weight:600;padding:4px 9px;border-radius:7px;border:1px solid var(--border);background:#fff;color:var(--muted);cursor:pointer">Resolve</button>'
++'</div>'}).join('')
+:'<div style="font-size:12px;color:var(--muted)">Nothing open.</div>';
+
+el.innerHTML='<p class="page-sub">Day '+day.day+' \u00b7 '+esc(day.dow)+', '+esc(day.date)+' \u00b7 '+esc(day.theme||'')+'</p>'
++'<div class="sync-section"><h3>Sessions today</h3>'+(rows||'<div style="font-size:12px;color:var(--muted)">Nothing scheduled.</div>')+'</div>'
++'<div class="sync-section" style="margin-top:16px"><h3>Open issues'+(open.length?' \u00b7 '+open.length:'')+'</h3>'+issueHtml+'</div>'
++'<div class="sync-section" style="margin-top:16px"><h3>Dietary needs</h3>'+dietHtml+'</div>'}
+
+/* Marking an issue resolved is an organiser write; the list refreshes from the
+   server afterwards rather than assuming it worked. */
+async function resolveIssue(id){
+try{
+var r=await fetch('/api/feedback',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:id,status:'resolved'})});
+if(!checkAuth(r))return;
+if(!r.ok){var e=await r.json().catch(function(){return{}});throw new Error(e.error||'Could not update')}
+await loadFeedback();rToday();
+toast(IC.check+' Issue resolved','green');
+}catch(e){toast(IC.x+' '+e.message,'')}}
 
 /* ── Attendance dashboard ── */
 function renderAttDash(){
@@ -1472,6 +1561,7 @@ loadSyncMeta();
 async function loadSyncMeta(){
 try{
 var res=await fetch('/api/schedule');
+if(!checkAuth(res))return;
 var data=await res.json();
 var el=document.getElementById('syncMeta');
 if(data.syncedAt){
@@ -1508,7 +1598,7 @@ var pg=document.getElementById('page-profile'),err=document.getElementById('prof
 if(pg)pg.classList.add('pf-loading');
 if(err)err.style.display='none';
 try{
-var r=await fetch('/api/profile');if(!r.ok)throw new Error('HTTP '+r.status);
+var r=await fetch('/api/profile');if(!checkAuth(r))return;if(!r.ok)throw new Error('HTTP '+r.status);
 var d=await r.json();
 fillProfileForm(d.profile);
 var note=document.getElementById('profSetupNote');
@@ -1579,6 +1669,7 @@ finally{btn.disabled=false}
 async function loadPeople(){
 try{
 var r=await fetch('/api/people');
+if(!checkAuth(r))return;
 if(!r.ok)return;
 var d=await r.json();
 if(d.people&&d.people.length){P=d.people;
@@ -1595,7 +1686,7 @@ console.log('[People] Loaded '+P.length+' signed-up participants');}
 async function saveRsvp(id){
 var res=await fetch('/api/rsvp',{method:'PUT',headers:{'Content-Type':'application/json'},
 body:JSON.stringify({eventKey:id,status:meals[id]||null,addedToSchedule:!!rsvps[id]})});
-if(!res.ok){var e=await res.json().catch(function(){return{}});throw new Error(e.error||('HTTP '+res.status))}
+if(!res.ok){if(!checkAuth(res))throw new Error('Session expired');var e=await res.json().catch(function(){return{}});throw new Error(e.error||('HTTP '+res.status))}
 }
 
 /* Never leave the splash up if a request hangs. */
@@ -1618,6 +1709,7 @@ console.log('[Schedule Sync] Loaded '+S.length+' days from server');
 /* RSVPs must load after the schedule: event keys are derived from S. */
 try{
 var rr=await fetch('/api/rsvp');
+if(!checkAuth(rr))return;
 if(rr.ok){
 var rd=await rr.json();
 myUserId=rd.userId||null;myName=rd.userName||null;
