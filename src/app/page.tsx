@@ -16,5 +16,5 @@ export default async function Home() {
     return <Pending email={access.email} />
   }
 
-  return <Portal role={access.role} email={access.email} />
+  return <Portal role={access.role} email={access.email} superAdmin={access.superAdmin} />
 }

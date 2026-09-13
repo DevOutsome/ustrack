@@ -16,8 +16,13 @@ import { NextResponse } from 'next/server'
 export async function DELETE() {
   const access = await getAccess()
   if (!access) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  if (access.role !== 'organizer')
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  // Erasing everyone's RSVPs and feedback is the one action a normal admin
+  // should not be able to take by accident.
+  if (!access.superAdmin)
+    return NextResponse.json(
+      { error: 'Only a super admin can erase program data' },
+      { status: 403 },
+    )
 
   const supabase = await createServerSupabase()
   const { data, error } = await supabase.rpc('reset_program_data')

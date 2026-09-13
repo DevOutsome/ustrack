@@ -20,7 +20,7 @@ export async function GET() {
   const supabase = await createServerSupabase()
   const { data, error } = await supabase
     .from('users')
-    .select('id, email, display_name, company, role, approved, approved_at, created_at')
+    .select('id, email, display_name, company, role, approved, approved_at, created_at, is_super_admin')
     .order('approved', { ascending: true })
     .order('created_at', { ascending: true })
 
@@ -34,6 +34,7 @@ export async function GET() {
       company: u.company || '',
       role: u.role || 'participant',
       approved: u.approved === true,
+      superAdmin: u.is_super_admin === true,
       joinedAt: u.created_at,
     }))
   )

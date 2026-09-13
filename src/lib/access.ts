@@ -17,6 +17,8 @@ export type Access = {
   email: string
   role: string
   approved: boolean
+  /** Organiser tier that may erase program data or remove an approved member. */
+  superAdmin: boolean
 }
 
 export async function getAccess(): Promise<Access | null> {
@@ -24,9 +26,10 @@ export async function getAccess(): Promise<Access | null> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
 
-  const [{ data: role }, { data: approved }] = await Promise.all([
+  const [{ data: role }, { data: approved }, { data: superAdmin }] = await Promise.all([
     supabase.rpc('get_user_role', { user_id: user.id }),
     supabase.rpc('is_approved', { user_id: user.id }),
+    supabase.rpc('is_super_admin', { user_id: user.id }),
   ])
 
   return {
@@ -34,6 +37,7 @@ export async function getAccess(): Promise<Access | null> {
     email: user.email ?? '',
     role: role || 'participant',
     approved: approved === true,
+    superAdmin: superAdmin === true,
   }
 }
 

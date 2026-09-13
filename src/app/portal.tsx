@@ -10,7 +10,7 @@ import { useRef, useCallback, useEffect } from 'react'
  * patching here, it silently stopped working once the schedule started loading
  * asynchronously.
  */
-export default function Portal({ role, email }: { role: string; email: string }) {
+export default function Portal({ role, email, superAdmin }: { role: string; email: string; superAdmin: boolean }) {
   const iframeRef = useRef<HTMLIFrameElement>(null)
 
   // Logout: the iframe sends a postMessage because it cannot call supabase.auth
@@ -28,12 +28,12 @@ export default function Portal({ role, email }: { role: string; email: string })
   }, [])
 
   const handleLoad = useCallback(() => {
-    const win = iframeRef.current?.contentWindow as unknown as { setRole?: (r: string) => void }
+    const win = iframeRef.current?.contentWindow as unknown as { setRole?: (r: string, s?: boolean) => void }
     const doc = iframeRef.current?.contentDocument
     if (!win || !doc) return
 
     if (typeof win.setRole === 'function') {
-      win.setRole(role)
+      win.setRole(role, superAdmin)
       if (role !== 'organizer') {
         const seg = doc.getElementById('roleSeg')
         if (seg) seg.style.display = 'none'
@@ -84,7 +84,7 @@ export default function Portal({ role, email }: { role: string; email: string })
 <div id="ml"><div style="color:#857F76;font-size:13px;padding:10px 0">Loading…</div></div>`
     anchor.parentNode?.insertBefore(section, anchor.nextSibling)
 
-    type Member = { email: string; name: string; company: string; role: string; approved: boolean }
+    type Member = { email: string; name: string; company: string; role: string; approved: boolean; superAdmin?: boolean }
 
     const initials = (s: string) =>
       s.split(/[\s@._-]+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join('')
@@ -101,10 +101,12 @@ export default function Portal({ role, email }: { role: string; email: string })
   <div class="mc-main">
     <div class="mc-name">${m.name}</div>
     <div class="mc-sub">${m.email}${m.company ? ' · ' + m.company : ''}</div>
-    <span class="mc-tag" style="background:${m.role === 'organizer' ? '#E3ECFD' : '#E8F5E9'};color:${m.role === 'organizer' ? '#153F9E' : '#1B5E20'}">${m.role.charAt(0).toUpperCase() + m.role.slice(1)}</span>
+    <span class="mc-tag" style="background:${m.superAdmin ? '#2F2C26' : m.role === 'organizer' ? '#E3ECFD' : '#E8F5E9'};color:${m.superAdmin ? '#fff' : m.role === 'organizer' ? '#153F9E' : '#1B5E20'}">${m.superAdmin ? 'Super Admin' : m.role === 'organizer' ? 'Admin' : m.role.charAt(0).toUpperCase() + m.role.slice(1)}</span>
   </div>
   <div class="mc-act">
-    ${m.approved
+    ${m.superAdmin
+      ? `<span class="mc-lbl">Full access</span>`
+      : m.approved
       ? `<span class="mc-lbl">Admin</span><div class="at${m.role === 'organizer' ? ' on' : ''}" data-e="${m.email}"></div>
          <button class="revoke-btn" data-revoke="${m.email}">Remove</button>`
       : `<button class="reject-btn" data-reject="${m.email}">Reject</button><button class="approve-btn" data-approve="${m.email}">Approve</button>`}
@@ -165,7 +167,7 @@ ${active.map(card).join('')}`
     }
 
     void load()
-  }, [role])
+  }, [role, superAdmin])
 
   return (
     <iframe

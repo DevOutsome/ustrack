@@ -20,7 +20,7 @@ export async function GET() {
 
   const { data, error } = await supabase
     .from('users')
-    .select('id, email, display_name, company, title, role, diet, avatar_url, bio')
+    .select('id, email, display_name, company, title, role, diet, avatar_url, bio, created_at')
     // Pending and removed accounts must not appear in the roster everyone sees.
     // Without this, a revoked member stayed visible to all participants.
     .eq('approved', true)
@@ -38,6 +38,8 @@ export async function GET() {
     diet: u.diet || '',
     avatar: u.avatar_url || '',
     bio: u.bio || '',
+    // Powers the "just joined" feed in the sidebar widget.
+    joinedAt: u.created_at,
   }))
 
   return NextResponse.json({ people })

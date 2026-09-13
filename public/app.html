@@ -112,6 +112,16 @@ transition:width .42s var(--ease),right .42s var(--ease),padding .42s var(--ease
 .cr-day{width:12px;height:12px;border-radius:3.5px;background:var(--bg2);flex-shrink:0;position:relative}
 .cr-day[data-tip]:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 5px);left:50%;transform:translateX(-50%);font-size:9px;font-weight:600;white-space:nowrap;background:var(--text);color:#fff;padding:3px 7px;border-radius:5px;pointer-events:none;z-index:10}
 .cr-noanim,.cr-noanim *{transition:none!important}
+.cr-feed{display:none}
+.cr.open .cr-feed{display:block;margin-top:11px;padding-top:10px;border-top:1px solid rgba(232,225,214,.85)}
+.cr.done .cr-feed{border-top-color:rgba(200,230,201,.75)}
+.cr-feed-label{font-size:8px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+.cr-feed-item{display:flex;align-items:center;gap:7px;padding:3px 0}
+.cr-feed-av{width:20px;height:20px;border-radius:6px;background:var(--bg2);display:grid;place-items:center;font-size:8px;font-weight:700;color:var(--text);flex-shrink:0;overflow:hidden}
+.cr-feed-av img{width:100%;height:100%;object-fit:cover}
+.cr-feed-name{font-size:10.5px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+.cr-feed-co{font-weight:400;color:var(--muted)}
+.cr-feed-ago{font-size:9px;color:var(--muted);flex-shrink:0}
 .cr-note{display:none}
 .cr.open .cr-note{display:block;margin-top:11px;padding-top:9px;border-top:1px solid rgba(232,225,214,.85);font-size:9.5px;line-height:1.5;color:var(--muted);letter-spacing:-.05px}
 .cr-note b{color:var(--text2);font-weight:700}
@@ -861,7 +871,7 @@ async function loadAnnouncements(){try{var r=await fetch('/api/admin/announcemen
 loadAnnouncements();
 
 /* STATE */
-var curRole='organizer';
+var curRole='organizer',isSuperAdmin=false;
 var _ls={g:function(k){try{return localStorage.getItem(k)}catch(e){return null}},s:function(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
 /* RSVP state. The server (/api/rsvp) is the source of truth; these objects are a
    local mirror kept in sync so the UI can update in place without re-rendering.
@@ -1061,6 +1071,34 @@ if(a.pct>=0.7)return'<span style="display:inline-block;margin-left:5px;backgroun
 if(a.done>0)return'<span style="display:inline-block;margin-left:5px;background:#FFF8E1;color:#C8892C;font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;vertical-align:1px">'+(a.pct*100|0)+'%</span>';
 return''}
 
+/* Short relative time for the "just joined" feed. */
+function agoShort(ts){
+if(!ts)return'';
+var d=Math.max(0,Date.now()-new Date(ts).getTime());
+var m=Math.floor(d/60000);if(m<1)return'now';
+if(m<60)return m+'m';
+var h=Math.floor(m/60);if(h<24)return h+'h';
+var dd=Math.floor(h/24);return dd+'d'}
+
+/* Who joined in the last week, newest first. Hidden entirely when nobody has -
+   an empty section reads as broken, and there is nothing honest to show. */
+function joinedFeedHtml(){
+var WINDOW=7*24*3600*1000,now=Date.now();
+var recent=P.filter(function(p){
+if(!p.joinedAt)return false;
+if(p.id===myUserId)return false;
+return now-new Date(p.joinedAt).getTime()<WINDOW})
+.sort(function(a,b){return new Date(b.joinedAt)-new Date(a.joinedAt)})
+.slice(0,3);
+if(!recent.length)return'';
+return'<div class="cr-feed"><div class="cr-feed-label">Just joined</div>'
++recent.map(function(p){
+var av=p.avatar?'<img src="'+p.avatar+'" alt="">':esc(ini(p.name));
+return'<div class="cr-feed-item"><div class="cr-feed-av">'+av+'</div>'
++'<div class="cr-feed-name">'+esc(p.name)+(p.co?' <span class="cr-feed-co">\u00b7 '+esc(p.co)+'</span>':'')+'</div>'
++'<div class="cr-feed-ago">'+agoShort(p.joinedAt)+'</div></div>'}).join('')
++'</div>'}
+
 /* ── Completion Ring ── */
 function rCR(){
 var el=document.getElementById('completionRing');if(!el)return;
@@ -1102,7 +1140,8 @@ el.innerHTML='<button class="cr-close" onclick="event.stopPropagation();toggleCR
 +'<div class="cr-body"><div class="cr-title">'+(hit?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;vertical-align:-2px;margin-right:3px;color:#2E7D32"><path d="M20 6L9 17l-5-5"/></svg>70% Reached':'My Plan')+'</div>'
 +'<div class="cr-sub">'+(hit?'<b>'+done+'</b>/'+total+' sessions added<br>above the 70% mark':'<b>'+done+'</b>/'+total+' sessions added<br><b>'+need+' more</b> for 70%')+'</div>'
 +'<div class="cr-days">'+dots+'</div>'
-+'<div class="cr-note">Sessions you have added to your schedule. The program asks for <b>70%</b>. Meals and workouts are not counted.</div></div>'}
++'<div class="cr-note">Sessions you have added to your schedule. The program asks for <b>70%</b>. Meals and workouts are not counted.</div>'
++joinedFeedHtml()+'</div>'}
 
 /* Widget expand/collapse. Collapsed by default so it stays a small dot on the
    side; clicking the ring opens the detail. */
@@ -1263,7 +1302,9 @@ document.getElementById('infoSearch').addEventListener('input',rI);
 document.getElementById('admPrev').addEventListener('click',function(){if(admDay>1){admDay--;rAdmin()}});
 document.getElementById('admNext').addEventListener('click',function(){if(admDay<S.length){admDay++;rAdmin()}});
 document.addEventListener('keydown',function(e){if(e.key==='Escape')cM()});
-function setRole(r){curRole=r;document.getElementById('adminTab').style.display=r==='organizer'?'':'none';var tba=document.getElementById('tabbarAdmin');if(tba)tba.style.display=r==='organizer'?'':'none';document.querySelectorAll('#roleSeg button').forEach(function(b){b.classList.toggle('active',b.dataset.role===r)});/* The profile header is owned by loadProfile() - it renders the signed-in
+function setRole(r,isSuper){curRole=r;if(isSuper!==undefined)isSuperAdmin=!!isSuper;document.getElementById('adminTab').style.display=r==='organizer'?'':'none';/* Tools holds Reset Test Data - super admin only, so a normal admin never
+   sees a button that wipes everyone's RSVPs. */
+var tb=document.querySelector('.admin-tab-btn[data-atab="tools"]');if(tb)tb.style.display=isSuperAdmin?'':'none';var tp=document.getElementById('adminTabTools');if(tp&&!isSuperAdmin)tp.style.display='none';var tba=document.getElementById('tabbarAdmin');if(tba)tba.style.display=r==='organizer'?'':'none';document.querySelectorAll('#roleSeg button').forEach(function(b){b.classList.toggle('active',b.dataset.role===r)});/* The profile header is owned by loadProfile() - it renders the signed-in
    user's own row from /api/profile. setRole only governs admin visibility. */
 if(r!=='organizer'&&document.getElementById('page-admin').classList.contains('active'))sP('schedule')}
 document.getElementById('roleSeg').addEventListener('click',function(e){var b=e.target.closest('button');if(b)setRole(b.dataset.role)});
@@ -1279,6 +1320,7 @@ document.getElementById('adminTabAnnounce').style.display=tab==='announce'?'':'n
 document.getElementById('adminTabTools').style.display=tab==='tools'?'':'none';
 if(tab==='meals')rAdmin();
 if(tab==='sync')loadSyncMeta();
+if(tab==='tools'&&!isSuperAdmin)return;
 if(tab==='attendance')renderAttDash();
 if(tab==='announce')renderAnnAdmin();
 }
@@ -1540,6 +1582,7 @@ var r=await fetch('/api/people');
 if(!r.ok)return;
 var d=await r.json();
 if(d.people&&d.people.length){P=d.people;
+if(typeof rCR==='function')rCR();   /* the "just joined" feed reads P */
 if(document.getElementById('peopleGrid'))rP();
 if(document.getElementById('adminContent'))rAdmin();
 if(typeof setRole==='function'&&curRole)setRole(curRole);  /* fill in the real profile header */
