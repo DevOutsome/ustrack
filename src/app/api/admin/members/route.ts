@@ -42,7 +42,7 @@ export async function GET() {
 /**
  * PUT: { email, newRole }   -> change role
  *      { email, approved }  -> admit or revoke access
- *      { email, reject: true } -> delete a pending (unapproved) account entirely
+ *      { email, reject: true } -> delete the account and its rsvps/nps/issues
  */
 export async function PUT(request: NextRequest) {
   const access = await getAccess()
@@ -54,9 +54,18 @@ export async function PUT(request: NextRequest) {
   const email = typeof body.email === 'string' ? body.email : ''
   if (!email) return NextResponse.json({ error: 'email required' }, { status: 400 })
 
+  // Remove an account entirely. reject_pending_user used to be called here; it
+  // returned success while leaving the public.users row in place, so a removed
+  // member kept showing up in everyone's People tab.
   if (body.reject === true) {
-    const { error } = await supabase.rpc('reject_pending_user', { target_email: email })
+    if (email === access.email) {
+      return NextResponse.json({ error: 'You cannot remove your own account' }, { status: 400 })
+    }
+    const { data, error } = await supabase.rpc('delete_user_account', { target_email: email })
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    if (data !== true) {
+      return NextResponse.json({ error: 'No such account' }, { status: 404 })
+    }
     return NextResponse.json({ success: true })
   }
 

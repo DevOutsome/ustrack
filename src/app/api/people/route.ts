@@ -21,6 +21,9 @@ export async function GET() {
   const { data, error } = await supabase
     .from('users')
     .select('id, email, display_name, company, title, role, diet, avatar_url, bio')
+    // Pending and removed accounts must not appear in the roster everyone sees.
+    // Without this, a revoked member stayed visible to all participants.
+    .eq('approved', true)
     .order('display_name', { ascending: true })
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })

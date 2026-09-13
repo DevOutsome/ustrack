@@ -5,8 +5,13 @@ import { NextResponse } from 'next/server'
 /**
  * DELETE /api/admin/reset-test-data
  *
- * Wipes rsvps, nps_responses, and issues. Organiser-only.
- * Users, profiles, schedule_data, and auth accounts are untouched.
+ * Clears rsvps, nps_responses and issues. Users, schedule and announcements stay.
+ *
+ * This goes through the reset_program_data() SECURITY DEFINER function, not
+ * through table deletes. RLS only lets someone delete their own rsvps, and has
+ * no delete policy at all for nps_responses or issues - so the direct version
+ * deleted almost nothing while reporting a SELECT count as if it had. The
+ * function returns the real deleted row counts.
  */
 export async function DELETE() {
   const access = await getAccess()
@@ -15,23 +20,22 @@ export async function DELETE() {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   const supabase = await createServerSupabase()
-  const counts: Record<string, number> = {}
+  const { data, error } = await supabase.rpc('reset_program_data')
 
-  for (const table of ['rsvps', 'nps_responses', 'issues'] as const) {
-    // count before delete so we can report what was cleared
-    const { count } = await supabase
-      .from(table)
-      .select('*', { count: 'exact', head: true })
-    counts[table] = count ?? 0
-
-    // delete all rows — neq('id', '') always true for uuid PKs
-    const { error } = await supabase.from(table).delete().neq('id', '')
-    if (error)
-      return NextResponse.json(
-        { error: `Failed to clear ${table}: ${error.message}` },
-        { status: 500 },
-      )
+  if (error) {
+    // Never report success for a reset that did not run.
+    return NextResponse.json(
+      { error: `Reset failed: ${error.message}` },
+      { status: 500 },
+    )
   }
 
-  return NextResponse.json({ cleared: counts })
+  const row = Array.isArray(data) ? data[0] : data
+  return NextResponse.json({
+    cleared: {
+      rsvps: Number(row?.rsvps ?? 0),
+      nps_responses: Number(row?.nps_responses ?? 0),
+      issues: Number(row?.issues ?? 0),
+    },
+  })
 }

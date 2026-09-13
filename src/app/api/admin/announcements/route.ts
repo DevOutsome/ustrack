@@ -10,7 +10,7 @@ import { NextRequest, NextResponse } from 'next/server'
  * DELETE — organiser-only: { id }
  *
  * Table: public.announcements (id uuid PK, title text, body text,
- *        created_at timestamptz, created_by uuid FK users.id)
+ *        created_at timestamptz)
  * If the table doesn't exist yet it will 500 and the client falls back to
  * the hardcoded ANN array, so this is safe to ship before the migration runs.
  */
@@ -52,10 +52,11 @@ export async function POST(request: NextRequest) {
   if (!title) return NextResponse.json({ error: 'Title required' }, { status: 400 })
 
   const supabase = await createServerSupabase()
+  // No created_by: the table does not carry one, and inserting it failed the
+  // whole POST with a schema-cache error. Nothing in the UI attributes posts.
   const { error } = await supabase.from('announcements').insert({
     title,
     body: text,
-    created_by: access.userId,
   })
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ ok: true })

@@ -1098,11 +1098,11 @@ el.className='cr'+(hit?' done':'')+(wasOpen?' open':'');
 el.title=wasOpen?'':'Attendance \u00b7 '+(pct*100|0)+'% \u2014 click for detail';
 el.innerHTML='<button class="cr-close" onclick="event.stopPropagation();toggleCR(false)" title="Collapse">\u2715</button>'
 +'<div class="cr-ring"><svg viewBox="0 0 48 48"><circle class="cr-track" cx="24" cy="24" r="'+R+'"/><circle class="cr-fill" cx="24" cy="24" r="'+R+'" stroke="'+strokeCol+'" stroke-dasharray="'+C+'" stroke-dashoffset="'+fill+'"/><line class="cr-mark" x1="24" y1="24" x2="'+mx.toFixed(1)+'" y2="'+my.toFixed(1)+'"/></svg><div class="cr-pct">'+(pct*100|0)+'%</div></div>'
-+'<div class="cr-label">'+(hit?'Done':'Goal')+'</div>'
-+'<div class="cr-body"><div class="cr-title">'+(hit?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;vertical-align:-2px;margin-right:3px;color:#2E7D32"><path d="M20 6L9 17l-5-5"/></svg>Program Complete':'Attendance')+'</div>'
-+'<div class="cr-sub">'+(hit?'<b>'+done+'</b>/'+total+' required sessions<br>you\'re all set \u2705':'<b>'+done+'</b>/'+total+' required<br><b>'+need+' more</b> to hit 70%')+'</div>'
++'<div class="cr-label">'+(hit?'70%':'Plan')+'</div>'
++'<div class="cr-body"><div class="cr-title">'+(hit?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;vertical-align:-2px;margin-right:3px;color:#2E7D32"><path d="M20 6L9 17l-5-5"/></svg>70% Reached':'My Plan')+'</div>'
++'<div class="cr-sub">'+(hit?'<b>'+done+'</b>/'+total+' sessions added<br>above the 70% mark':'<b>'+done+'</b>/'+total+' sessions added<br><b>'+need+' more</b> for 70%')+'</div>'
 +'<div class="cr-days">'+dots+'</div>'
-+'<div class="cr-note">Program credit needs <b>70%</b> of required sessions. Meals and workouts are not counted.</div></div>'}
++'<div class="cr-note">Sessions you have added to your schedule. The program asks for <b>70%</b>. Meals and workouts are not counted.</div></div>'}
 
 /* Widget expand/collapse. Collapsed by default so it stays a small dot on the
    side; clicking the ring opens the detail. */
