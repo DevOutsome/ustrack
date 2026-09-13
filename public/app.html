@@ -1008,7 +1008,11 @@ function rS(){var el=document.getElementById('scheduleList'),h='',days=selDay===
 if(n&&selDay>0&&viewMode==='cards'&&!mySched)h+=checkinHtml(selDay);el.innerHTML=n?h:'<div class="empty"><svg class="logo-wm" viewBox="0 0 854 854" fill="none"><path d="M807 132.751C807 167.96 778.532 196.502 743.415 196.502C708.298 196.502 679.83 167.96 679.83 132.751C679.83 97.5422 708.298 69 743.415 69C778.532 69 807 97.5422 807 132.751Z" fill="#2F2C26"/><path d="M616.242 427.599C616.242 322.601 531.346 237.484 426.622 237.484C321.898 237.484 237.003 322.601 237.003 427.599C237.003 532.596 321.898 617.713 426.622 617.713V727C261.698 727 128 592.953 128 427.599C128 262.244 261.698 128.197 426.622 128.197C591.547 128.197 725.245 262.244 725.245 427.599C725.245 592.953 591.547 727 426.622 727V617.713C531.346 617.713 616.242 532.596 616.242 427.599Z" fill="#2F2C26"/></svg>No events in your schedule yet.<br><small style="display:block;margin-top:6px;font-size:12.5px">Tap “Add to schedule” on any event to save it here.</small></div>'}
 function rP(){var g=document.getElementById('peopleGrid'),f=document.getElementById('peopleFilters');['all','organizer','speaker','vc','participant'].forEach(function(){});var labels={all:'All',organizer:'Organizers',speaker:'Speakers',vc:'VCs',participant:'Participants'};f.innerHTML=['all','organizer','speaker','vc','participant'].map(function(r){return'<button class="chip '+(pFilter===r?'active':'')+'" onclick="pFilter=\''+r+'\';rP()">'+labels[r]+'</button>'}).join('');var list=pFilter==='all'?P:P.filter(function(p){return p.role===pFilter});if(!list.length){g.innerHTML='<div class="empty" style="padding:28px 0">'+(P.length?'No one in this group yet.':ldText('Loading participants…'))+'</div>';return}
 g.innerHTML=list.map(function(p){var ab=attBadge(p.id);return'<div class="person"><div class="p-av">'+(p.avatar?'<img src="'+p.avatar+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover">':ini(p.name))+'</div><div><div class="p-name">'+p.name+ab+'</div><div class="p-co">'+p.co+'</div><span class="p-tag tag-'+p.role+'">'+p.title+'</span></div></div>'}).join('')}
-function rI(){var el=document.getElementById('infoContent'),q=document.getElementById('infoSearch').value.toLowerCase();el.innerHTML=INFO.map(function(s){var items=s.items.filter(function(i){return!q||i.q.toLowerCase().indexOf(q)>=0||i.a.toLowerCase().indexOf(q)>=0});if(!items.length)return'';return'<div class="info-sec"><h2>'+s.section+'</h2>'+items.map(function(i){return'<div class="acc"><div class="acc-h" onclick="this.parentElement.classList.toggle(\'open\')">'+i.q+IC.plus+'</div><div class="acc-b"><div><p>'+i.a+'</p></div></div></div>'}).join('')+'</div>'}).join('')}
+/* Fold punctuation and spacing away so "wifi" finds "Wi-Fi" - people do not
+   type the hyphen, and a literal match returned nothing for the single most
+   likely search on this page. */
+function normQ(t){return String(t||'').toLowerCase().replace(/[^a-z0-9\uac00-\ud7a3]+/g,'')}
+function rI(){var el=document.getElementById('infoContent'),raw=document.getElementById('infoSearch').value,q=normQ(raw);el.innerHTML=INFO.map(function(s){var items=s.items.filter(function(i){return!q||normQ(i.q).indexOf(q)>=0||normQ(i.a).indexOf(q)>=0});if(!items.length)return'';return'<div class="info-sec"><h2>'+s.section+'</h2>'+items.map(function(i){return'<div class="acc"><div class="acc-h" onclick="this.parentElement.classList.toggle(\'open\')">'+i.q+IC.plus+'</div><div class="acc-b"><div><p>'+i.a+'</p></div></div></div>'}).join('')+'</div>'}).join('')}
 /* ── Notification panel ── */
 var notifSeen=JSON.parse(_ls.g('notif_seen')||'{}');
 function toggleNotif(){var o=document.getElementById('notifOverlay');if(o.classList.contains('open')){o.classList.remove('open');return}
@@ -1189,17 +1193,29 @@ else dot.classList.remove('on')}
 function rA(){document.getElementById('annList').innerHTML=ANN.map(function(a){return'<div class="ann" onclick="this.classList.toggle(\'open\')"><div class="ann-t"><div class="ann-pin">'+IC.ann+'</div><div><div class="ann-title">'+a.title+'</div><div class="ann-date">'+a.date+'</div></div></div><div class="ann-body"><div><p>'+a.body+'</p></div></div></div>'}).join('')}
 
 /* ADMIN - Meal Dashboard */
+/* Shared by both check-in states. standalone=true means the day is already
+   rated, so the form shows itself and carries its own submit button. */
+function issueFormHtml(day,standalone){
+var cats=['\ud83c\udfe0 Stay','\ud83c\udf7d\ufe0f Food','\ud83d\ude97 Transport','\ud83d\udcbb Tech','\ud83e\uddd1\u200d\u2695\ufe0f Health','\ud83d\udcac Other'];
+return'<div class="issue-form" id="issueForm"'+(standalone?'':' style="display:none"')+'><h4>Anything to flag? <span style="font-weight:400;color:var(--muted);font-size:11px">(optional)</span></h4>'
++'<div class="sub">Stays between you and admins.</div><div class="issue-cats" id="issueCats">'
++cats.map(function(c){return'<button class="issue-cat" onclick="pickIC(this)">'+c+'</button>'}).join('')
++'</div><textarea class="issue-text" id="issueInput" placeholder="Describe the issue..."></textarea>'
++(standalone?'<button class="issue-submit" onclick="submitIssueOnly('+day+')" style="margin-top:10px">Send report</button>':'')
++'</div>'}
+
 function checkinHtml(day){
 var saved=npsDone[day];
-if(saved)return'<div class="checkin"><div class="checkin-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>Daily NPS</div><div class="nps"><div class="nps-sent">'+IC.check+'Thanks for today\'s feedback!</div></div></div>';
+/* The check-in used to return here and nothing else, which took the issue
+   form down with it - once someone rated the day they could no longer report
+   a problem for the rest of it. Rating and flagging are separate things. */
+if(saved)return'<div class="checkin"><div class="checkin-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>Daily NPS</div><div class="nps"><div class="nps-sent">'+IC.check+'Thanks for today\'s feedback!</div></div>'+issueFormHtml(day,true)+'</div>';
 return'<div class="checkin"><div class="checkin-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>Daily NPS</div>'+
 '<div class="nps" id="npsRate"><h4>How was today?</h4><div class="emoji-row" id="emojiRow">'+
 ['1','2','3','4','5'].map(function(e,i){return'<button class="emoji-btn" data-v="'+(i+1)+'" onclick="pickEmoji('+day+','+(i+1)+',this)">'+e+'</button>'}).join('')+
 '</div><div class="emoji-label"><span>Rough</span><span>Amazing</span></div></div>'+
 '<div class="nps" id="npsHL" style="display:none"><h4>Highlight of the day?</h4><div class="nps-text"><input id="hlInput" placeholder="Best moment in one line..." maxlength="100"></div></div>'+
-'<div class="issue-form" id="issueForm" style="display:none"><h4>Anything to flag? <span style="font-weight:400;color:var(--muted);font-size:11px">(optional)</span></h4><div class="sub">Stays between you and admins.</div><div class="issue-cats" id="issueCats">'+
-['\ud83c\udfe0 Stay','\ud83c\udf7d\ufe0f Food','\ud83d\ude97 Transport','\ud83d\udcbb Tech','\ud83e\uddd1\u200d\u2695\ufe0f Health','\ud83d\udcac Other'].map(function(c){return'<button class="issue-cat" onclick="pickIC(this)">'+c+'</button>'}).join('')+
-'</div><textarea class="issue-text" id="issueInput" placeholder="Describe the issue..."></textarea></div>'+
+issueFormHtml(day,false)+
 '<div class="nps" id="npsDone" style="display:none"><button class="issue-submit" onclick="finishNPS('+day+')" style="margin-top:0">Submit Daily NPS</button></div></div>'}
 var npsD={};
 /* Daily check-ins and issue reports live on the server (/api/feedback).
@@ -1237,6 +1253,18 @@ await loadFeedback();
 toast(IC.check+' Daily NPS submitted!','green');
 }catch(e){toast(IC.x+' '+e.message,'')}
 }
+/* Report an issue on a day that is already rated. Same write path as the
+   check-in, just without the NPS payload. */
+async function submitIssueOnly(day){
+var el=document.getElementById('issueInput'),txt=el?el.value.trim():'';
+if(!txt){toast(IC.x+' Write what happened first','');return}
+var catEl=document.querySelector('#issueCats .on');
+try{
+await postFeedback({day:day,issue:{category:catEl?catEl.textContent.trim():'Other',text:txt}});
+await loadFeedback();
+toast(IC.check+' Reported \u00b7 thanks','green');
+}catch(e){toast(IC.x+' '+e.message,'')}}
+
 function pickIC(btn){document.querySelectorAll('#issueCats .issue-cat').forEach(function(b){b.classList.remove('on')});btn.classList.add('on');npsD.issueCat=btn.textContent}
 async function submitIss(day){
 var el=document.getElementById('issueInput'),txt=el?el.value.trim():'';
