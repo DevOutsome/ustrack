@@ -474,8 +474,9 @@ h1.page-title{font-size:28px;font-weight:800;letter-spacing:-.7px;margin-bottom:
 .sync-file-label{display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;border:2px dashed var(--border);border-radius:10px;cursor:pointer;font-size:13px;color:var(--muted);transition:all .2s}
 .sync-file-label:hover{border-color:var(--brand);color:var(--brand)}
 .sync-file-label input{display:none}
-.admin-tabs{display:flex;gap:4px;margin-bottom:18px;border-bottom:1.5px solid var(--border);padding-bottom:0}
-.admin-tab-btn{padding:8px 16px;font-size:13px;font-weight:600;color:var(--muted);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1.5px;transition:all .15s}
+.admin-tabs{display:flex;flex-wrap:nowrap;gap:4px;margin-bottom:18px;border-bottom:1.5px solid var(--border);padding-bottom:0;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none}
+.admin-tabs::-webkit-scrollbar{display:none}
+.admin-tab-btn{padding:8px 14px;font-size:12px;font-weight:600;color:var(--muted);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1.5px;transition:all .15s;white-space:nowrap;flex:0 0 auto}
 .admin-tab-btn.active{color:var(--brand);border-bottom-color:var(--brand)}
 
 @media(max-width:640px){.nav{padding:0 14px}.nav-brand small{display:none}.nav-tab{padding:7px 10px;font-size:12px}.page{padding:16px 14px 40px}.ec-time{min-width:72px;font-size:11px}.people-grid{grid-template-columns:1fr 1fr}.day-tab{min-width:50px;padding:7px 9px}.all-btn span{display:none}.all-btn{padding:0 11px}.ec-footer{flex-direction:column;align-items:stretch}.ec-actions{justify-content:space-between}.stat-pills{flex-wrap:wrap}}
@@ -609,7 +610,7 @@ h1.page-title{font-size:24px;letter-spacing:-.6px}
 .admin-header{gap:10px;margin-bottom:14px}
 .admin-header .badge{font-size:9px;padding:3px 8px}
 .admin-tabs{margin-bottom:14px;gap:0}
-.admin-tabs .admin-tab-btn{flex:1;text-align:center;padding:10px 4px;font-size:12.5px}
+.admin-tabs .admin-tab-btn{flex:0 0 auto;text-align:center;padding:10px 10px;font-size:12px;white-space:nowrap}
 .date-nav{margin-bottom:14px!important}
 #admTitle b{font-size:15px}
 #admTitle small{font-size:11.5px}
