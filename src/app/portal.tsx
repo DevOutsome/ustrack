@@ -44,7 +44,7 @@ export default function Portal({ role, email, superAdmin }: { role: string; emai
 
     if (role !== 'organizer' && !superAdmin) return
 
-    const anchor = doc.getElementById('page-admin') || doc.getElementById('adminContent')
+    const anchor = doc.getElementById('page-admin')
     if (!anchor) return
 
     const style = doc.createElement('style')
@@ -76,7 +76,7 @@ export default function Portal({ role, email, superAdmin }: { role: string; emai
 
     const section = doc.createElement('div')
     section.id = 'memberMgmt'
-    section.style.cssText = 'margin-top:32px;padding-top:24px;border-top:1px solid #E8E1D6'
+    section.style.cssText = 'padding-top:4px'
     section.innerHTML = `
 <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
   <h2 style="font-size:20px;font-weight:800;letter-spacing:-.5px">All Users</h2>
@@ -84,8 +84,35 @@ export default function Portal({ role, email, superAdmin }: { role: string; emai
 </div>
 <p style="font-size:12px;color:#857F76;margin-bottom:4px">New signups wait here until you let them in. Admin grants organizer access.</p>
 <div id="ml"><div style="color:#857F76;font-size:13px;padding:10px 0">Loading…</div></div>`
-    if (anchor.id === 'page-admin') anchor.appendChild(section)
-    else anchor.parentNode?.insertBefore(section, anchor.nextSibling)
+    const existing = doc.getElementById('adminTabUsers')
+    const pane = existing || doc.createElement('div')
+    pane.id = 'adminTabUsers'
+    pane.style.display = 'none'
+    pane.appendChild(section)
+    if (!existing) anchor.appendChild(pane)
+
+    const bar = doc.querySelector('.admin-tabs')
+    if (bar && !bar.querySelector('[data-atab="users"]')) {
+      const tabBtn = doc.createElement('button')
+      tabBtn.className = 'admin-tab-btn'
+      tabBtn.dataset.atab = 'users'
+      tabBtn.textContent = 'Users'
+      tabBtn.setAttribute('onclick', "switchAdminTab('users')")
+      const toolsBtn = bar.querySelector('[data-atab="tools"]')
+      if (toolsBtn) bar.insertBefore(tabBtn, toolsBtn)
+      else bar.appendChild(tabBtn)
+    }
+
+    const tabWin = win as unknown as { switchAdminTab?: (t: string) => void; __usersTabPatched?: boolean }
+    const origSwitch = tabWin.switchAdminTab
+    if (typeof origSwitch === 'function' && !tabWin.__usersTabPatched) {
+      tabWin.switchAdminTab = (t: string) => {
+        origSwitch(t)
+        const pn = doc.getElementById('adminTabUsers')
+        if (pn) pn.style.display = t === 'users' ? '' : 'none'
+      }
+      tabWin.__usersTabPatched = true
+    }
 
     type Member = { email: string; name: string; company: string; role: string; approved: boolean; superAdmin?: boolean }
 
