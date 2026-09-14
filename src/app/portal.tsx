@@ -34,7 +34,7 @@ export default function Portal({ role, email, superAdmin }: { role: string; emai
 
     if (typeof win.setRole === 'function') {
       win.setRole(role, superAdmin)
-      if (role !== 'organizer') {
+      if (role !== 'organizer' && !superAdmin) {
         // Hide the whole row, not just the control - the "View as:" label was
         // left behind on participant screens with nothing next to it.
         const seg = doc.getElementById('roleSeg')
