@@ -1236,35 +1236,48 @@ console.log('[Feedback] '+serverNPS.length+' check-ins, '+serverIssues.length+' 
 }
 async function postFeedback(payload){
 var r=await fetch('/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+if(!checkAuth(r))throw new Error('Session expired \u2014 sign in again');
 var d=await r.json().catch(function(){return{}});
 if(!r.ok)throw new Error(d.error||'Could not submit');
 return d}
 function pickEmoji(day,val,btn){document.querySelectorAll('#emojiRow .emoji-btn').forEach(function(b){b.classList.remove('selected')});btn.classList.add('selected');npsD.rating=val;burst(btn,'#2F2C26');setTimeout(function(){var el1=document.getElementById('npsHL');var el2=document.getElementById('issueForm');var el3=document.getElementById('npsDone');if(el1)el1.style.display='';if(el2)el2.style.display='';if(el3)el3.style.display=''},400)}
 function submitHL(day){}
 async function finishNPS(day){
+var btn=document.querySelector('[onclick^="finishNPS"]');
+if(btn&&btn.disabled)return;
 var issEl=document.getElementById('issueInput');
 var catEl=document.querySelector('#issueCats .on');
 var hl=document.getElementById('hlInput')?document.getElementById('hlInput').value:'';
 var payload={day:day,rating:npsD.rating,highlight:hl};
 if(issEl&&issEl.value.trim())payload.issue={category:catEl?catEl.textContent.trim():'Other',text:issEl.value.trim()};
+if(btn){btn.disabled=true;btn.textContent='Submitting\u2026'}
+toast('<span class="spin"></span>Submitting\u2026','');
 try{
 await postFeedback(payload);
 npsDone[day]={rating:npsD.rating,highlight:hl};
 await loadFeedback();
 toast(IC.check+' Daily NPS submitted!','green');
-}catch(e){toast(IC.x+' '+e.message,'')}
+}catch(e){
+if(btn){btn.disabled=false;btn.textContent='Submit Daily NPS'}
+toast(IC.x+' '+e.message,'')}
 }
 /* Report an issue on a day that is already rated. Same write path as the
    check-in, just without the NPS payload. */
 async function submitIssueOnly(day){
+var btn=document.querySelector('[onclick^="submitIssueOnly"]');
+if(btn&&btn.disabled)return;
 var el=document.getElementById('issueInput'),txt=el?el.value.trim():'';
 if(!txt){toast(IC.x+' Write what happened first','');return}
 var catEl=document.querySelector('#issueCats .on');
+if(btn){btn.disabled=true;btn.textContent='Sending\u2026'}
+toast('<span class="spin"></span>Sending\u2026','');
 try{
 await postFeedback({day:day,issue:{category:catEl?catEl.textContent.trim():'Other',text:txt}});
 await loadFeedback();
 toast(IC.check+' Reported \u00b7 thanks','green');
-}catch(e){toast(IC.x+' '+e.message,'')}}
+}catch(e){
+if(btn){btn.disabled=false;btn.textContent='Send report'}
+toast(IC.x+' '+e.message,'')}}
 
 function pickIC(btn){document.querySelectorAll('#issueCats .issue-cat').forEach(function(b){b.classList.remove('on')});btn.classList.add('on');npsD.issueCat=btn.textContent}
 async function submitIss(day){

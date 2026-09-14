@@ -48,15 +48,19 @@ export async function middleware(request: NextRequest) {
     return supabaseResponse
   }
 
+  // API routes gate themselves and must return JSON, not a redirect. This check
+  // has to come BEFORE the signed-out redirect. With it after, an expired session
+  // sent /api/* to /login, so fetch() saw a 200 HTML page on GET and a bare 405
+  // on POST/PUT. checkAuth() only reacts to 401, so the session-expired modal
+  // never opened and every write failed as "Could not submit".
+  if (path.startsWith('/api/')) {
+    return supabaseResponse
+  }
+
   if (!user) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
-  }
-
-  // API routes gate themselves and must return JSON, not a redirect.
-  if (path.startsWith('/api/')) {
-    return supabaseResponse
   }
 
   // "/" renders the waiting screen itself; anything else is program content.
