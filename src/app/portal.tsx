@@ -44,7 +44,7 @@ export default function Portal({ role, email, superAdmin }: { role: string; emai
 
     if (role !== 'organizer' && !superAdmin) return
 
-    const anchor = doc.getElementById('adminContent')
+    const anchor = doc.getElementById('page-admin') || doc.getElementById('adminContent')
     if (!anchor) return
 
     const style = doc.createElement('style')
@@ -84,7 +84,8 @@ export default function Portal({ role, email, superAdmin }: { role: string; emai
 </div>
 <p style="font-size:12px;color:#857F76;margin-bottom:4px">New signups wait here until you let them in. Admin grants organizer access.</p>
 <div id="ml"><div style="color:#857F76;font-size:13px;padding:10px 0">Loading…</div></div>`
-    anchor.parentNode?.insertBefore(section, anchor.nextSibling)
+    if (anchor.id === 'page-admin') anchor.appendChild(section)
+    else anchor.parentNode?.insertBefore(section, anchor.nextSibling)
 
     type Member = { email: string; name: string; company: string; role: string; approved: boolean; superAdmin?: boolean }
 
@@ -163,9 +164,20 @@ ${active.map(card).join('')}`
     }
 
     const load = async () => {
-      const res = await fetch('/api/admin/members')
-      const members = await res.json()
-      if (Array.isArray(members)) render(members)
+      const list = doc.getElementById('ml')
+      for (let i = 0; i < 5; i++) {
+        try {
+          const res = await fetch('/api/admin/members', { cache: 'no-store' })
+          if (res.ok) {
+            const members = await res.json()
+            if (Array.isArray(members)) { render(members); return }
+          }
+        } catch { /* retry */ }
+        await new Promise(r => setTimeout(r, 400 * (i + 1)))
+      }
+      if (list) list.innerHTML = '<div style="color:#C62828;font-size:13px;padding:10px 0">Could not load users. <button id="mlRetry" style="text-decoration:underline;background:none;border:none;color:#C62828;cursor:pointer;font-size:13px">Retry</button></div>'
+      const rb = doc.getElementById('mlRetry')
+      if (rb) rb.addEventListener('click', () => { if (list) list.innerHTML = '<div style="color:#857F76;font-size:13px;padding:10px 0">Loading…</div>'; void load() })
     }
 
     void load()
