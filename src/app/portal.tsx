@@ -42,7 +42,7 @@ export default function Portal({ role, email, superAdmin }: { role: string; emai
       }
     }
 
-    if (role !== 'organizer') return
+    if (role !== 'organizer' && !superAdmin) return
 
     const anchor = doc.getElementById('adminContent')
     if (!anchor) return
