@@ -1605,6 +1605,8 @@ try{
 var res=await fetch('/api/schedule');
 if(!checkAuth(res))return;
 var data=await res.json();
+var inp=document.getElementById('syncSheetUrl');
+if(inp&&!inp.value&&data.sourceUrl)inp.value=data.sourceUrl;
 var el=document.getElementById('syncMeta');
 if(data.syncedAt){
 var d=new Date(data.syncedAt);
