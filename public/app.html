@@ -999,7 +999,7 @@ else toast(IC.check+' Saved \u00b7 skipping this meal','')})}
 var HK_CATS={move:1,logistics:1,free:1,house_activity:1/* legacy */};
 function isHK(ev){return !!HK_CATS[ev.cat]}
 /* Attendance ("Strongly Recommended" | "Recommended" | "Free Time") comes from the sheet. */
-function attMark(ev){return ev.att==='Strongly Recommended'?'<span class="req">Required</span>':''}
+function attMark(ev){return ev.att==='Strongly Recommended'?'<span class="req">Strongly Recommended</span>':''}
 
 /* RENDER SCHEDULE (full render only on day change / view change) */
 function rDT(){var el=document.getElementById('dayTabs'),h='';S.forEach(function(d){h+='<button class="day-tab '+(selDay===d.day?'active':'')+(d.off?' off':'')+'" data-day="'+d.day+'"><span class="dow">'+d.dow+'</span><span class="dnum">'+d.date.split('/')[1]+'</span></button>'});el.innerHTML=h;document.getElementById('allBtn').classList.toggle('active',selDay===0);document.getElementById('prevDay').disabled=selDay<=1;document.getElementById('nextDay').disabled=selDay===0||selDay>=S.length;var t=document.getElementById('dayTitle');if(selDay===0){t.innerHTML='<b>All days</b><small>Oct 19–Nov 1 · 14 days</small>'}else{var d=S.find(function(x){return x.day===selDay});t.innerHTML='<b>Day '+d.day+' · '+d.theme+'</b><small>'+d.dow+', Oct '+d.date.split('/')[1]+'</small>'+(QUOTES[d.day]?'<span class="qt">\u201c'+QUOTES[d.day].q+'\u201d \u2014 '+QUOTES[d.day].a+'</span>':'')}var act=el.querySelector('.day-tab.active');if(act)act.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'})}
@@ -1444,7 +1444,7 @@ var req=ev.att==='Strongly Recommended';
 rows+='<div style="padding:10px 0;border-bottom:1px solid #F5F2EC">'
 +'<div style="display:flex;align-items:baseline;gap:9px">'
 +'<div style="font-size:11px;font-weight:700;color:var(--muted);min-width:42px">'+esc(ev.t.split('\u2013')[0])+'</div>'
-+'<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;letter-spacing:-.2px">'+esc(ev.title)+(req?'<span style="font-size:9px;font-weight:700;color:var(--muted);margin-left:6px">REQUIRED</span>':'')+'</div>'
++'<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;letter-spacing:-.2px">'+esc(ev.title)+(req?'<span style="font-size:9px;font-weight:700;color:var(--muted);margin-left:6px">STRONGLY RECOMMENDED</span>':'')+'</div>'
 +(ev.loc?'<div style="font-size:11px;color:var(--muted);margin-top:1px">'+esc(ev.loc)+'</div>':'')+'</div>'
 +'<div style="font-size:12px;font-weight:800;flex-shrink:0">'+count+'</div></div>'
 +(chips?'<div style="margin-top:4px;margin-left:51px">'+chips+more+'</div>':'')
