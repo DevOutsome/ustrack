@@ -856,7 +856,7 @@ var INFO=[{section:'General',items:[
 {q:'House rules summary',a:'1. Clean up immediately after using shared spaces\n2. Quiet hours: 10pm \u2013 8am (wood-frame house - sound carries)\n3. Wear indoor slippers at night\n4. Take late-night calls to your room\n5. Label all food in fridge\n6. Dispose food waste immediately\n7. Shoes off inside\n8. No smoking (indoor + outdoor)\n9. Turn off AC/heater/lights/fireplace when leaving\n10. Turn off gas fireplace & patio heater after use\n\nOne rule to remember: leave every space better than you found it.'}]},
 {section:'Schedule & Sessions',items:[
 {q:'Daily rhythm',a:'8\u20139am: Daily Sync Over Breakfast\n9am\u201312pm: Morning sessions\n12\u20131pm: Lunch (provided)\n1\u20135pm: Afternoon sessions\n5\u20137pm: Dinner (varies)\n8\u20139pm: Optional 24 Hour Fitness\n\nCheck the Schedule tab daily - things change.'},
-{q:'Mandatory vs optional',a:'Most sessions: Strongly Recommended\n\nOptional:\n\u2022 24 Hour Fitness evenings\n\u2022 Free time blocks\n\u2022 Weekend (Oct 24\u201325)\n\nMeal RSVP by 6pm PST the day before.'}]},
+{q:'Strongly Recommended vs optional',a:'Most sessions: Strongly Recommended\n\nOptional:\n\u2022 24 Hour Fitness evenings\n\u2022 Free time blocks\n\u2022 Weekend (Oct 24\u201325)\n\nMeal RSVP by 6pm PST the day before.'}]},
 {section:'Food & Dining',items:[
 {q:'Program meals',a:'Breakfast: Daily Sync at MARU SF\nLunch: Provided by Outsome\nDinner: Varies (catered or external networking)\n\nRSVP deadline: 6pm PST day before. Bernice orders based on headcount.\n\nUpdate dietary needs in your Profile.'},
 {q:'Dietary restrictions',a:'We accommodate everything: vegetarian, vegan, gluten-free, halal, nut-free, etc.\n\nUpdate Profile > Dietary needs.\nChanges mid-program? Tell Bernice directly.'},
@@ -1505,7 +1505,7 @@ el.innerHTML='<div style="display:flex;gap:12px;margin-bottom:16px">'
 +'<div style="flex:1;padding:10px 14px;background:#E8F5E9;border-radius:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:#2E7D32">'+onTrack+'</div><div style="font-size:10px;font-weight:600;color:#2E7D32;text-transform:uppercase;letter-spacing:.5px">On Track</div></div>'
 +'<div style="flex:1;padding:10px 14px;background:#FFF8E1;border-radius:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:#C8892C">'+atRisk+'</div><div style="font-size:10px;font-weight:600;color:#C8892C;text-transform:uppercase;letter-spacing:.5px">At Risk</div></div>'
 +'<div style="flex:1;padding:10px 14px;background:#FDECEA;border-radius:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:#C62828">'+noShow+'</div><div style="font-size:10px;font-weight:600;color:#C62828;text-transform:uppercase;letter-spacing:.5px">No Activity</div></div></div>'
-+'<div style="font-size:11px;color:var(--muted);margin-bottom:10px">70% = '+thresh+'/'+total+' required sessions</div>'
++'<div style="font-size:11px;color:var(--muted);margin-bottom:10px">70% = '+thresh+'/'+total+' Strongly Recommended sessions</div>'
 +list.map(function(p){
 var pct=total?p.done/total:0;var w=Math.max(2,pct*100);
 var col=pct>=0.7?'#2E7D32':pct>=0.5?'#C8892C':p.done>0?'#E65100':'#BDBDBD';
