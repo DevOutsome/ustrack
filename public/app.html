@@ -38,7 +38,8 @@ a{color:inherit;text-decoration:none}button{font:inherit;cursor:pointer;border:n
 .nav-bell{position:relative;width:38px;height:38px;border-radius:10px;display:grid;place-items:center;transition:background .2s}
 .nav-bell:hover{background:rgba(20,20,20,.05)}.nav-bell svg{width:20px;height:20px}
 .nav-bell .dot{position:absolute;top:8px;right:9px;width:8px;height:8px;background:var(--red);border-radius:50%;border:2px solid var(--bg);display:none}
-.nav-bell .dot.on{display:block}
+.nav-bell .dot.on{display:block;animation:bellPulse 2.4s ease-out infinite}
+@keyframes bellPulse{0%{box-shadow:0 0 0 0 rgba(198,40,40,.4)}70%{box-shadow:0 0 0 7px rgba(198,40,40,0)}100%{box-shadow:0 0 0 0 rgba(198,40,40,0)}}
 /* Boot splash: covers the app until schedule + RSVP + roster have loaded, so
    the first thing a participant sees is the real state, not a fallback that
    gets repainted a second later. */
@@ -212,7 +213,8 @@ h1.page-title{font-size:28px;font-weight:800;letter-spacing:-.7px;margin-bottom:
 .ec-loc{display:flex;align-items:center;gap:5px;font-size:12.5px;color:var(--muted);margin-top:2px}.ec-loc svg{width:12px;height:12px;flex-shrink:0}
 .ec-footer{display:flex;align-items:center;justify-content:space-between;margin-top:16px;flex-wrap:wrap;gap:10px;padding-top:14px;border-top:1px solid var(--border)}
 .ec-avatars{display:flex;align-items:center}
-.ec-avatar{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#E9E2D5,#D9CFBE);display:grid;place-items:center;font-size:9px;font-weight:700;color:#5c574f;border:2px solid #fff;margin-right:-7px;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.ec-avatar{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#E9E2D5,#D9CFBE);display:grid;place-items:center;font-size:9px;font-weight:700;color:#5c574f;border:2px solid #fff;margin-right:-7px;box-shadow:0 1px 2px rgba(0,0,0,.08);overflow:hidden}
+.ec-avatar img{width:100%;height:100%;min-width:0;min-height:0;object-fit:cover;display:block}
 .ec-going{font-size:12px;font-weight:600;color:var(--muted);margin-left:12px}
 .ec-actions{display:flex;align-items:center;gap:10px;position:relative}
 
@@ -909,6 +911,18 @@ lecture:'Lecture',workshop:'Workshop',fireside:'Fireside',event:'Event',office_h
    an empty schedule should read 0, not a comfortable number. */
 function evPeople(d,i){var c=rsvpCounts[eid(d,i)];return(c&&c.people)||[]}
 function fG(d,i){return evPeople(d,i).length}
+/* The RSVP payload carries id/name/company but no photo, so borrow it from the
+   roster already in memory. loadPeople() re-runs rS(), so cards fill in as soon
+   as P lands. */
+function pAvatar(id){for(var i=0;i<P.length;i++){if(P[i].id===id)return P[i].avatar||''}return''}
+/* Days until the program opens. Used to surface the day panel again when it
+   finally has something worth reading. */
+function daysToStart(){
+if(!S.length||!S[0].date)return 999;
+var q=String(S[0].date).split('/');if(q.length<2)return 999;
+var now=new Date(),start=new Date(now.getFullYear(),+q[0]-1,+q[1]);
+if(start-now<-2592000000)start=new Date(now.getFullYear()+1,+q[0]-1,+q[1]);
+return Math.ceil((start-now)/86400000)}
 function fA(d,i){var ppl=evPeople(d,i);return{shown:ppl.slice(0,3),total:ppl.length}}
 /* Keep the local aggregate in step with an optimistic toggle so counts move
    immediately instead of only after a reload. Covers BOTH axes - schedule-add
@@ -1006,7 +1020,7 @@ function attMark(ev){return ev.att==='Strongly Recommended'?'<span class="req">S
 function rDT(){var el=document.getElementById('dayTabs'),h='';S.forEach(function(d){h+='<button class="day-tab '+(selDay===d.day?'active':'')+(d.off?' off':'')+'" data-day="'+d.day+'"><span class="dow">'+d.dow+'</span><span class="dnum">'+d.date.split('/')[1]+'</span></button>'});el.innerHTML=h;document.getElementById('allBtn').classList.toggle('active',selDay===0);document.getElementById('prevDay').disabled=selDay<=1;document.getElementById('nextDay').disabled=selDay===0||selDay>=S.length;var t=document.getElementById('dayTitle');if(selDay===0){t.innerHTML='<b>All days</b><small>Oct 19–Nov 1 · 14 days</small>'}else{var d=S.find(function(x){return x.day===selDay});t.innerHTML='<b>Day '+d.day+' · '+d.theme+'</b><small>'+d.dow+', Oct '+d.date.split('/')[1]+'</small>'+(QUOTES[d.day]?'<span class="qt">\u201c'+QUOTES[d.day].q+'\u201d \u2014 '+QUOTES[d.day].a+'</span>':'')}var act=el.querySelector('.day-tab.active');if(act)act.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'})}
 function mealSeg(id){var v=meals[id];return'<div class="meal-seg" onclick="event.stopPropagation()"><button class="yes '+(v==='yes'?'on':'')+'" onclick="event.stopPropagation();tM(\''+id+'\',\'yes\',this)">'+IC.check+'I\'m in</button><button class="no '+(v==='no'?'on':'')+'" onclick="event.stopPropagation();tM(\''+id+'\',\'no\',this)">Skip</button></div>'}
 function addBtn(id){var a=rsvps[id];return'<button class="add-btn '+(a?'added':'')+'" onclick="event.stopPropagation();tR(\''+id+'\',this)">'+(a?IC.check+'Added':IC.plus+'Add to schedule')+'</button>'}
-function rS(){var el=document.getElementById('scheduleList'),h='',days=selDay===0?S:S.filter(function(d){return d.day===selDay}),n=0;days.forEach(function(d){var rows='';d.events.forEach(function(ev,i){var id=eid(d.day,i);if(mySched&&!rsvps[id])return;n++;var badge='<span class="ec-badge badge-'+ev.cat+'">'+(CATICON[ev.cat]||'')+catL(ev.cat)+'</span>'+(isYC(ev)?'<span class="yc-tag">'+YCLOGO+'YC</span>':'')+attMark(ev);if(viewMode==='agenda'){var a=rsvps[id];rows+='<div class="agenda-row cat-'+ev.cat+(isHK(ev)?' housekeeping':'')+'" onclick="oM('+d.day+','+i+')"><span class="t">'+ev.t.split('–')[0]+'</span><span class="ec-badge badge-'+ev.cat+'" style="margin:0">'+(CATICON[ev.cat]||'')+catL(ev.cat)+'</span><span class="ti">'+ev.title+'</span>'+(isYC(ev)?'<span class="yc-tag" style="margin:0">'+YCLOGO+'</span>':'')+(a?'<span class="ch">'+IC.check+'</span>':'')+'</div>'}else{var fa=fA(d.day,i);var av=fa.shown.map(function(p){return'<div class="ec-avatar">'+ini(p.name)+'</div>'}).join('');var hk=isHK(ev);rows+='<div class="event-card cat-'+ev.cat+(hk?' housekeeping':'')+'" data-k="'+id+'" onclick="oM('+d.day+','+i+')">'+(rsvps[id]?'<div class="added-dot">'+IC.check+'</div>':'')+'<div class="ec-top"><div class="ec-time"><span class="t-range">'+ev.t+'</span>'+sunHtml(ev.t)+'</div><div class="ec-body">'+badge+'<div class="ec-title">'+ev.title+'</div>'+(ev.loc?'<div class="ec-loc">'+IC.pin+ev.loc+'</div>':'')+'</div></div><div class="ec-footer"><div style="display:flex;align-items:center"><div class="ec-avatars">'+av+'</div><span class="ec-going">'+fa.total+' going</span></div><div class="ec-actions">'+(hk?'':((ev.meal?mealSeg(id):'')+addBtn(id)))+'</div></div></div>'}});if(!rows)return;if(selDay===0)h+='<div class="day-header"><b>Day '+d.day+' · '+d.theme+'</b><span>'+d.dow+', Oct '+d.date.split('/')[1]+'</span></div>';h+=rows});
+function rS(){var el=document.getElementById('scheduleList'),h='',days=selDay===0?S:S.filter(function(d){return d.day===selDay}),n=0;days.forEach(function(d){var rows='';d.events.forEach(function(ev,i){var id=eid(d.day,i);if(mySched&&!rsvps[id])return;n++;var badge='<span class="ec-badge badge-'+ev.cat+'">'+(CATICON[ev.cat]||'')+catL(ev.cat)+'</span>'+(isYC(ev)?'<span class="yc-tag">'+YCLOGO+'YC</span>':'')+attMark(ev);if(viewMode==='agenda'){var a=rsvps[id];rows+='<div class="agenda-row cat-'+ev.cat+(isHK(ev)?' housekeeping':'')+'" onclick="oM('+d.day+','+i+')"><span class="t">'+ev.t.split('–')[0]+'</span><span class="ec-badge badge-'+ev.cat+'" style="margin:0">'+(CATICON[ev.cat]||'')+catL(ev.cat)+'</span><span class="ti">'+ev.title+'</span>'+(isYC(ev)?'<span class="yc-tag" style="margin:0">'+YCLOGO+'</span>':'')+(a?'<span class="ch">'+IC.check+'</span>':'')+'</div>'}else{var fa=fA(d.day,i);var av=fa.shown.map(function(p){var pa=pAvatar(p.id);return'<div class="ec-avatar">'+(pa?'<img src="'+pa+'" alt="">':ini(p.name))+'</div>'}).join('');var hk=isHK(ev);rows+='<div class="event-card cat-'+ev.cat+(hk?' housekeeping':'')+'" data-k="'+id+'" onclick="oM('+d.day+','+i+')">'+(rsvps[id]?'<div class="added-dot">'+IC.check+'</div>':'')+'<div class="ec-top"><div class="ec-time"><span class="t-range">'+ev.t+'</span>'+sunHtml(ev.t)+'</div><div class="ec-body">'+badge+'<div class="ec-title">'+ev.title+'</div>'+(ev.loc?'<div class="ec-loc">'+IC.pin+ev.loc+'</div>':'')+'</div></div><div class="ec-footer"><div style="display:flex;align-items:center"><div class="ec-avatars">'+av+'</div><span class="ec-going">'+fa.total+' going</span></div><div class="ec-actions">'+(hk?'':((ev.meal?mealSeg(id):'')+addBtn(id)))+'</div></div></div>'}});if(!rows)return;if(selDay===0)h+='<div class="day-header"><b>Day '+d.day+' · '+d.theme+'</b><span>'+d.dow+', Oct '+d.date.split('/')[1]+'</span></div>';h+=rows});
 if(n&&selDay>0&&viewMode==='cards'&&!mySched)h+=checkinHtml(selDay);el.innerHTML=n?h:'<div class="empty"><svg class="logo-wm" viewBox="0 0 854 854" fill="none"><path d="M807 132.751C807 167.96 778.532 196.502 743.415 196.502C708.298 196.502 679.83 167.96 679.83 132.751C679.83 97.5422 708.298 69 743.415 69C778.532 69 807 97.5422 807 132.751Z" fill="#2F2C26"/><path d="M616.242 427.599C616.242 322.601 531.346 237.484 426.622 237.484C321.898 237.484 237.003 322.601 237.003 427.599C237.003 532.596 321.898 617.713 426.622 617.713V727C261.698 727 128 592.953 128 427.599C128 262.244 261.698 128.197 426.622 128.197C591.547 128.197 725.245 262.244 725.245 427.599C725.245 592.953 591.547 727 426.622 727V617.713C531.346 617.713 616.242 532.596 616.242 427.599Z" fill="#2F2C26"/></svg>No events in your schedule yet.<br><small style="display:block;margin-top:6px;font-size:12.5px">Tap “Add to schedule” on any event to save it here.</small></div>'}
 function rP(){var g=document.getElementById('peopleGrid'),f=document.getElementById('peopleFilters');['all','organizer','speaker','vc','participant'].forEach(function(){});var labels={all:'All',organizer:'Organizers',speaker:'Speakers',vc:'VCs',participant:'Participants'};f.innerHTML=['all','organizer','speaker','vc','participant'].map(function(r){return'<button class="chip '+(pFilter===r?'active':'')+'" onclick="pFilter=\''+r+'\';rP()">'+labels[r]+'</button>'}).join('');var list=pFilter==='all'?P:P.filter(function(p){return p.role===pFilter});if(!list.length){g.innerHTML='<div class="empty" style="padding:28px 0">'+(P.length?'No one in this group yet.':ldText('Loading participants…'))+'</div>';return}
 g.innerHTML=list.map(function(p){var ab=attBadge(p.id);return'<div class="person"><div class="p-av">'+(p.avatar?'<img src="'+p.avatar+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover">':ini(p.name))+'</div><div><div class="p-name">'+p.name+ab+'</div><div class="p-co">'+p.co+'</div><span class="p-tag tag-'+p.role+'">'+p.title+'</span></div></div>'}).join('')}
@@ -1772,10 +1786,26 @@ rCR();
 /* Expanded unless the participant collapsed it themselves - the number means
    nothing if you have to click to find out what it is. Opened without the
    transition so it is simply already there on load. */
-if(!_ls.g('cr_collapsed')){
+function _openCR(){
+if(_ls.g('cr_collapsed'))return;
 var _cr=document.getElementById('completionRing');
-if(_cr){_cr.classList.add('cr-noanim');toggleCR(true);
-requestAnimationFrame(function(){requestAnimationFrame(function(){_cr.classList.remove('cr-noanim')})})}}
+if(!_cr)return;
+_cr.classList.add('cr-noanim');toggleCR(true);
+requestAnimationFrame(function(){requestAnimationFrame(function(){_cr.classList.remove('cr-noanim')})})}
+/* A red dot only works on someone already looking for it. Open the day panel
+   outright on the first visit, and once more when the program is three days out
+   and the panel finally has today's sessions in it.
+   The panel sits on top of the plan widget in both layouts, so they take turns:
+   the widget expands after the panel is dismissed. */
+var _d2s=daysToStart();
+var _autoNotif=!notifSeen.ts||(_d2s<=3&&notifSeen.near!==1);
+if(_autoNotif){
+if(_d2s<=3){notifSeen.near=1;_ls.s('notif_seen',JSON.stringify(notifSeen))}
+toggleNotif();
+var _ov=document.getElementById('notifOverlay');
+if(_ov)_ov.addEventListener('click',function(){setTimeout(_openCR,260)},{once:true});
+else _openCR()}
+else{_openCR()}
 /* Everything the first paint depends on is here. Drop the splash. */
 var sp=document.getElementById('splash');if(sp)sp.classList.add('gone');
 /* Company autocomplete from existing participants */
